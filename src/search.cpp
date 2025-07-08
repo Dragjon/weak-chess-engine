@@ -204,7 +204,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // except if it's in a zugzwang. Hence, if we skip out turn and
     // we still maintain beta, then we can prune early. Also do not
     // do NMP when tt suggests that it should fail immediately
-    if (!pv_node && !node_is_check && static_eval >= beta && depth >= null_move_depth.current && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK))){
+    if (!pv_node && !node_is_check && static_eval >= beta + 184 - 22 * depth && depth >= null_move_depth.current && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK))){
+        int32_t r = (1300 + depth * 80) / 256 + min((static_eval - beta) / 200, 4);
         board.makeNullMove();
         int32_t score = -alpha_beta(board, depth - null_move_reduction.current, -beta, -beta+1, ply + 1);
         board.unmakeNullMove();
