@@ -266,6 +266,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             }
         }
 
+        // Quiet late moves reduction - we have to trust that our
+        // move ordering is good enough most of the time to order
+        // best moves at the start
+        // Cutnodes LMR also - reduce even more on cut nodes
+        if (!is_noisy_move && depth >= late_move_reduction_depth.current)
+            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100)) + cut_node ? 1 : 0;
+
         // Static Exchange Evaluation Pruning
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
         if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
@@ -283,30 +290,23 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         int32_t score = 0;
 
-        // Principal Variation Search
-        // Here is our late moves reductions implementation (for quiets)
-        if (!is_noisy_move && move_count >= 2 && depth >= late_move_reduction_depth.current){
-            // LMR Formula
-            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
-
-            // Reduce cut-nodes
-            reduction += cut_node ? 1 : 0;
-            
-            // Null window search with lmr                                                            // cut-node
+        // Principle Variation Search
+        if (move_count == 1)
+                                                                                      // This is not a cut-node this is a PV node
+            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false);
+        else {
             score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true);
 
-            // Triple-PVS Idea - research with non-reduced depth if score > alpha
-            if (score > alpha && reduction != 0)
+            // Triple PVS
+            if (reduction > 0 && score > alpha)                                                
                 score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node);
+
+            // Research
+            if (score > alpha && score < beta) {
+                                                                                        // This is not a cut-node this is a PV node
+                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false);
+            }
         }
-
-        // Other non-reduced moves
-        else if (!pv_node || move_count > 1)
-            score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node);
-
-        // Full window search (either we're first move to be searched or null window searches are inconclusive)
-        if (pv_node && (move_count == 1 || score > alpha))
-            -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false);
 
         board.unmakeMove(current_move);
 
