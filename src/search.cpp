@@ -222,7 +222,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Main move loop
     // For loop is faster than foreach :)
-    Move current_best_move;
+    Move current_best_move{};
     int32_t move_count = 0;
 
     // Store quiets searched for history malus
