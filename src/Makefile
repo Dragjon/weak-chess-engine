@@ -23,3 +23,4 @@ all:
 
 clean:
 	rm -f *.o *.exe Engine-* weak
+

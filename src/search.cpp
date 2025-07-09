@@ -43,7 +43,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         return 0;
 
     // Get the TT Entry for current position
-    TTEntry entry;
+    TTEntry entry{};
     uint64_t zobrists_key = board.hash(); 
     bool tt_hit = tt.probe(zobrists_key, entry);
 
@@ -172,7 +172,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         return q_search(board, alpha, beta, ply);
 
     // Get the TT Entry for current position
-    TTEntry entry;
+    TTEntry entry{};
     uint64_t zobrists_key = board.hash(); 
     bool tt_hit = tt.probe(zobrists_key, entry);
 

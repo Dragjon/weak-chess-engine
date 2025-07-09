@@ -16,10 +16,11 @@ struct SearchParam {
     int32_t step;
 
     // Constructor
-    SearchParam(const std::string& name, int32_t current, int32_t min, int32_t max, int32_t step)
-        : name(name), current(current), min(min), max(max), step(step) {
-        all_params.push_back(this); // Register this param
+    SearchParam(const std::string& param_name, int32_t input_current, int32_t input_min, int32_t input_max, int32_t input_step)
+        : name(param_name), current(input_current), min(input_min), max(input_max), step(input_step) {
+        all_params.push_back(this);
     }
+
 
     void set(int32_t value) {
         current = std::clamp(value, min, max);
