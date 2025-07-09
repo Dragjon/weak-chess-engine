@@ -288,16 +288,19 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t score = 0;
 
         // Principle Variation Search
-        if (move_count == 1)
+        if (pv_node && move_count == 1)
+            // Full window search for 1st-ordered moves
             score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1);
         else {
+            // Null window search for the rest of the moves
             score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1);
 
             // Triple PVS
+            // Special search if we reduced the first null-window search
             if (reduction > 0 && score > alpha)
                 score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1);
 
-            // Research
+            // Research :(
             if (score > alpha && score < beta) {
                 score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1);
             }
