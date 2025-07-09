@@ -5,6 +5,7 @@ SearchParam threads("Threads", 1, 1, 1, 1);
 SearchParam reverse_futility_margin("ReverseFutilityMargin", 60, 30, 100, 10);
 SearchParam reverse_futility_depth("ReverseFutilityDepth", 8, 4, 10, 1);
 SearchParam null_move_depth("NullMoveDepth", 2, 1, 5, 1);
+SearchParam null_move_reduction("NullMoveReduction", 4, 2, 6, 1);
 SearchParam late_move_reduction_depth("LateMoveReductionDepth", 3, 1, 6, 1);
 SearchParam late_move_reduction_base("LateMoveReductionBase", 75, 30, 120, 15);
 SearchParam late_move_reduction_multiplier("LateMoveReductionMultiplier", 40, 10, 70, 7);
