@@ -16,7 +16,7 @@
 using namespace chess;
 using namespace std;
 
-chess::Move root_best_move;
+chess::Move root_best_move{};
 chess::Move killers[2][1024]{};
 int64_t best_move_nodes = 0;
 int64_t total_nodes_per_search = 0;
@@ -63,13 +63,13 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     if (alpha >= beta) return eval;
 
     // Get all legal moves for our moveloop in our search
-    Movelist capture_moves;
+    Movelist capture_moves{};
     movegen::legalmoves<movegen::MoveGenType::CAPTURE>(capture_moves, board);
 
     // Move ordering
     if (capture_moves.size() != 0) sort_captures(board, capture_moves, tt_hit, entry.best_move);
 
-    Move current_best_move;
+    Move current_best_move{};
     for (int idx = 0; idx < capture_moves.size(); idx++){
         Move current_move = capture_moves[idx];
 
@@ -151,7 +151,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         return 0;
 
     // Get all legal moves for our moveloop in our search
-    Movelist all_moves;
+    Movelist all_moves{};
     movegen::legalmoves(all_moves, board);
 
     // Checkmate detection
