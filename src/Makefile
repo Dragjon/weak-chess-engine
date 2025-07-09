@@ -14,8 +14,8 @@ SOURCES := $(wildcard *.cpp)
 GCC_VERSION := $(shell $(CXX) -dumpfullversion | cut -d. -f1 2>/dev/null || echo 0)
 
 all:
-	@if [ $(GCC_VERSION) -lt 12 ]; then \
-		echo "Error: GCC version $(GCC_VERSION) detected. Please use GCC 12 or newer."; \
+	@if [ $(GCC_VERSION) -lt 13 ]; then \
+		echo "Error: GCC version $(GCC_VERSION) detected. Please use GCC 13 or newer."; \
 		exit 1; \
 	else \
 		$(CXX) $(CXXFLAGS) $(SOURCES) -o $(EXE); \
