@@ -33,14 +33,31 @@ inline void reset_killers(){
             killers[i][j] = chess::Move{};
 }
 
-// Quiet History [color][from][to]
+
+// Maximum history score for both capthist and quiet hist
 constexpr int32_t MAX_HISTORY = 16384;
+
+// Quiet History [color][from][to]
 extern int32_t quiet_history[2][64][64];
 inline void reset_quiet_history() {
     for (int color = 0; color < 2; ++color) {
-        for (int piece = 0; piece < 64; ++piece) {
+        for (int from = 0; from < 64; ++from) {
             for (int square = 0; square < 64; ++square) {
-                quiet_history[color][piece][square] = 0;
+                quiet_history[color][from][square] = 0;
+            }
+        }
+    }
+}
+
+
+// Capture History [piece][target][captured]
+// size 7 for 3rd dimension to be safer and avoid ub
+extern int32_t capture_history[6][64][7];
+inline void reset_capture_history() {
+    for (int piece = 0; piece < 6; ++piece) {
+        for (int target = 0; target < 64; ++piece) {
+            for (int captured = 0; captured < 64; ++captured) {
+                quiet_history[piece][target][captured] = 0;
             }
         }
     }

@@ -16,12 +16,20 @@
 using namespace chess;
 using namespace std;
 
+// Best move at root
 chess::Move root_best_move{};
+
+// Killer heuristics
 chess::Move killers[2][MAX_SEARCH_PLY+1]{};
+
+// Node time management
 int64_t best_move_nodes = 0;
 int64_t total_nodes_per_search = 0;
 
+// Move histories
 int32_t quiet_history[2][64][64]{};
+int32_t capture_history[6][64][7]{};
+
 int32_t global_depth = 0;
 int64_t total_nodes = 0;
 
@@ -87,6 +95,13 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
         // QSEE pruning, if a move is obviously losing, don't search it
         if (!see(board, current_move, 0)) continue;
+
+        // Capture history pruning, if a capture score is too low, don't search it
+        int32_t piece = static_cast<int32_t>(board.at(current_move.from()));
+        int32_t target = current_move.to().index();
+        int32_t captured = static_cast<int32_t>(board.at(current_move.to()));
+        if (capture_history[piece][target][captured] < -4000)
+            continue;
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
@@ -247,9 +262,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     Move current_best_move{};
     int32_t move_count = 0;
 
-    // Store quiets searched for history malus
+    // Store quiets searched and captures searched for history malus
     Move quiets_searched[1024]{};
+    Move captures_searched[1024]{};
+    
     int32_t quiets_searched_idx = 0;
+    int32_t captures_searched_idx = 0;
 
     // Clear killers of next ply
     killers[0][ply+1] = Move{}; 
@@ -306,7 +324,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (board.inCheck())
             extension++;
 
-        quiets_searched[quiets_searched_idx++] = current_move;
+        // Quiets table update
+        if (!is_noisy_move)
+            quiets_searched[quiets_searched_idx++] = current_move;
+        
+        // Capture table update
+        else 
+            captures_searched[captures_searched_idx++] = current_move;
 
         int32_t score = 0;
 
@@ -374,8 +398,29 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                             Move quiet = quiets_searched[i];
                             from = quiet.from().index();
                             to = quiet.to().index();
-                            quiet_history[turn][from][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_bonus_base.current;
+                            quiet_history[turn][from][to] = quiet_history[turn][from][to] - clamp(history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_bonus_base.current, -MAX_HISTORY, MAX_HISTORY);
                         }
+                    }
+
+                    else {
+
+                        // Capture history heuristic + gravity
+                        int32_t piece = static_cast<int32_t>(board.at(current_move.from()));
+                        int32_t target = current_move.to().index();
+                        int32_t captured = static_cast<int32_t>(board.at(current_move.to()));
+
+                        int32_t bonus = clamp(500 * depth * depth + 200 * depth + 150, -MAX_HISTORY, MAX_HISTORY);
+                        capture_history[piece][target][captured] += bonus - capture_history[piece][target][captured] * abs(bonus) / MAX_HISTORY;
+
+                        // Capture history malus
+                        for (int32_t i = 0; i < captures_searched_idx; i++){
+                            Move capture_move = captures_searched[i];
+                            piece = static_cast<int32_t>(board.at(capture_move.from()));
+                            target = capture_move.to().index();
+                            captured = static_cast<int32_t>(board.at(capture_move.to()));
+                            capture_history[piece][target][captured] = clamp(capture_history[piece][target][captured] - 300 * depth * depth + 280 * depth + 50, -MAX_HISTORY, MAX_HISTORY);
+                        }
+
                     }
                     break;
                 }
