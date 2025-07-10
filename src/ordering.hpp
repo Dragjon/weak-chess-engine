@@ -31,7 +31,7 @@ inline void sort_moves(chess::Board& board, chess::Movelist& movelist, bool tt_h
             score = mvv_lva(board, move);
 
             // Order bad captures at the very back
-            score += see(board, move, 0) ? 0 : -10000000;
+            score += see(board, move, -82) ? 0 : -10000000;
         } else if (killers[0][ply] == move || killers[1][ply] == move) {
             score = KILLER_BONUS;
         } else {
@@ -72,7 +72,7 @@ inline void sort_captures(chess::Board& board, chess::Movelist& movelist, bool t
             score = mvv_lva(board, move);
 
             // Order bad captures at the very end
-            score += see(board, move, 0) ? 0 : -10000000;
+            score += see(board, move, -82) ? 0 : -10000000;
         }
 
         scores[i] = score;
