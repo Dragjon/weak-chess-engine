@@ -100,7 +100,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         int32_t piece = static_cast<int32_t>(board.at(current_move.from()));
         int32_t target = current_move.to().index();
         int32_t captured = static_cast<int32_t>(board.at(current_move.to()));
-        if (capture_history[piece][target][captured] < -2048)
+        if (capture_history[piece][target][captured] < -1024)
             continue;
 
         // Basic make and undo functionality. Copy-make should be faster but that
