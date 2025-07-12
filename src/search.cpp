@@ -26,8 +26,7 @@ chess::Move killers[2][MAX_SEARCH_PLY+1]{};
 int32_t quiet_history[2][64][64]{};
 
 // Continuation history
-int32_t one_ply_conthist[12][64][12][64]{};
-int32_t two_ply_conthist[12][64][12][64]{};
+int32_t conthist[12][64][12][64]{};
 
 int64_t best_move_nodes = 0;
 int64_t total_nodes_per_search = 0;
@@ -246,7 +245,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t reduction = 3 + depth / 3;
                                                                                         
         // Search has no parents :(
-        int32_t parents[4] = {99, 99, parent_move_piece, parent_move_square};                                              // Child of a cut node is a all-node and vice versa
+        int32_t parents[4] = {99, 99, 99, 99};                                              // Child of a cut node is a all-node and vice versa
         int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, parents);
         board.unmakeNullMove();
 
@@ -405,13 +404,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                         // 1-ply (Countermoves)
                         if (parent_move_piece != 99 && parent_move_square != 99){
                             int32_t conthist_bonus = clamp(500 * depth * depth + 200 * depth + 150, -MAX_HISTORY, MAX_HISTORY);
-                            one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] += conthist_bonus - one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] * abs(conthist_bonus) / MAX_HISTORY;
+                            conthist[parent_move_piece][parent_move_square][move_piece][to] += conthist_bonus - conthist[parent_move_piece][parent_move_square][move_piece][to] * abs(conthist_bonus) / MAX_HISTORY;
                         }
                         
                         // 2-ply (Follow-up moves)
                         if (parent_parent_move_piece != 99 && parent_parent_move_square != 99){
                             int32_t conthist_bonus = clamp(500 * depth * depth + 200 * depth + 150, -MAX_HISTORY, MAX_HISTORY);
-                            two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] += conthist_bonus - two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] * abs(conthist_bonus) / MAX_HISTORY;
+                            conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] += conthist_bonus - conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] * abs(conthist_bonus) / MAX_HISTORY;
                         }
 
                         // All History Malus
@@ -427,11 +426,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                             // Conthist Malus
                             // 1-ply (Countermoves)
                             if (parent_move_piece != 99 && parent_move_square != 99)
-                                one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to]  -= 300 * depth * depth + 280 * depth + 50;
+                                conthist[parent_move_piece][parent_move_square][move_piece][to]  -= 300 * depth * depth + 280 * depth + 50;
 
                             // 2-ply (Follow-up moves)
                             if (parent_parent_move_piece != 99 && parent_parent_move_square != 99)
-                                two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  -= 300 * depth * depth + 280 * depth + 50;
+                                conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  -= 300 * depth * depth + 280 * depth + 50;
                         }
                     }
 

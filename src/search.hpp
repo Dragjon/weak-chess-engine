@@ -47,15 +47,13 @@ inline void reset_quiet_history() {
 }
 
 // Continuation history [previous piece][target sq][curr piece][target square]
-extern int32_t one_ply_conthist[12][64][12][64];
-extern int32_t two_ply_conthist[12][64][12][64];
+extern int32_t conthist[12][64][12][64];
 inline void reset_continuation_history() {
     for (int32_t prev = 0; prev < 12; ++prev) {
         for (int32_t prev_sq = 0; prev_sq < 64; ++prev_sq) {
             for (int32_t curr = 0; curr < 12; ++curr) {
                 for (int32_t curr_sq = 0; curr_sq < 64; ++curr_sq){
-                    one_ply_conthist[prev][prev_sq][curr][curr_sq] = 0;
-                    two_ply_conthist[prev][prev_sq][curr][curr_sq] = 0;
+                    conthist[prev][prev_sq][curr][curr_sq] = 0;
                 }
             }
         }

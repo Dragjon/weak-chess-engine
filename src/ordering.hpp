@@ -43,11 +43,11 @@ inline void sort_moves(chess::Board& board, chess::Movelist& movelist, bool tt_h
 
             // Countermoves
             if (parent_move_piece != 99 && parent_move_square != 99)
-                score += one_ply_conthist[parent_move_piece][parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
+                score += conthist[parent_move_piece][parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
 
             // Follow-up moves
             if (parent_parent_move_piece != 99 && parent_parent_move_square != 99)
-                score += two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
+                score += conthist[parent_parent_move_piece][parent_parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
 
         }
 
