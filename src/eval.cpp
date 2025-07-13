@@ -138,6 +138,7 @@ const int32_t doubled_pawn_penalty[8] = {
     S(-13, -48), S(-15, -34), S(-16, -36), S(-15, -18), S(-15, -29), S(-17, -34), S(-16, -31), S(-22, -42),
 };
 
+// Rooks on seventh
 const int32_t pigs_on_seventh[8] = {
     S(78, 148), S(233, 322),
 };
