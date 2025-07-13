@@ -44,5 +44,5 @@ inline bool soft_bound_time_exceeded(chess::Board board) {
     double complexity = 0.8 * std::log(global_depth) * abs(evaluate(board) - best_root_score);
     double scale1 = (0.7 + std::clamp(complexity, 0.0, 200.0) / 400.0);
 
-    return elapsed.count() >= (int64_t)((double)max_soft_time_ms * scale);
+    return elapsed.count() >= (int64_t)((double)max_soft_time_ms * scale * scale1);
 }
