@@ -32,6 +32,7 @@ extern int32_t global_depth;
 extern int64_t best_move_nodes;
 extern int64_t total_nodes_per_search;
 extern int64_t total_nodes;
+extern int32_t best_root_score;
 
 extern int32_t seldpeth;
 

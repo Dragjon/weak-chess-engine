@@ -22,6 +22,7 @@ chess::Move root_best_move{};
 
 int64_t best_move_nodes = 0;
 int64_t total_nodes_per_search = 0;
+int32_t best_root_score = 0;
 
 int32_t global_depth = 0;
 int64_t total_nodes = 0;
@@ -484,7 +485,7 @@ int32_t search_root(Board &board){
         int32_t delta = aspiration_window_delta.current;
         int32_t alpha = DEFAULT_ALPHA;
         int32_t beta = DEFAULT_BETA;
-        while ((global_depth == 0 || !soft_bound_time_exceeded()) && global_depth < MAX_SEARCH_DEPTH){
+        while ((global_depth == 0 || !soft_bound_time_exceeded(board)) && global_depth < MAX_SEARCH_DEPTH){
             // Increment the global depth since global_depth starts from 0
             global_depth++;
             int32_t researches = 0;
@@ -535,13 +536,14 @@ int32_t search_root(Board &board){
                 }
 
                 // If we exceed our time management, we stop widening 
-                if (soft_bound_time_exceeded())
+                if (soft_bound_time_exceeded(board))
                     break;
                     
                 else delta += delta * aspiration_widening_factor.current / 100;
             }
 
             score = new_score;
+            best_root_score = score;
             
         }
     }
