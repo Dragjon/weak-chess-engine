@@ -330,6 +330,111 @@ const uint64_t LEFT_RIGHT_COLUMN_MASK[64] = {
     11574427654092267680ull,    4629771061636907072ull
 };
 
+const uint64_t LEFT_RIGHT_SQUARE_MASK[64] = {
+    2ull,    5ull,
+    10ull,    20ull,
+    40ull,    80ull,
+    160ull,    64ull,
+    512ull,    1280ull,
+    2560ull,    5120ull,
+    10240ull,    20480ull,
+    40960ull,    16384ull,
+    131072ull,    327680ull,
+    655360ull,    1310720ull,
+    2621440ull,    5242880ull,
+    10485760ull,    4194304ull,
+    33554432ull,    83886080ull,
+    167772160ull,    335544320ull,
+    671088640ull,    1342177280ull,
+    2684354560ull,    1073741824ull,
+    8589934592ull,    21474836480ull,
+    42949672960ull,    85899345920ull,
+    171798691840ull,    343597383680ull,
+    687194767360ull,    274877906944ull,
+    2199023255552ull,    5497558138880ull,
+    10995116277760ull,    21990232555520ull,
+    43980465111040ull,    87960930222080ull,
+    175921860444160ull,    70368744177664ull,
+    562949953421312ull,    1407374883553280ull,
+    2814749767106560ull,    5629499534213120ull,
+    11258999068426240ull,    22517998136852480ull,
+    45035996273704960ull,    18014398509481984ull,
+    144115188075855872ull,    360287970189639680ull,
+    720575940379279360ull,    1441151880758558720ull,
+    2882303761517117440ull,    5764607523034234880ull,
+    11529215046068469760ull,    4611686018427387904ull
+};
+
+const uint64_t WHITE_BEHIND_DIAGONAL_MASK[64] = {
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    2ull,    5ull,
+    10ull,    20ull,
+    40ull,    80ull,
+    160ull,    64ull,
+    512ull,    1280ull,
+    2560ull,    5120ull,
+    10240ull,    20480ull,
+    40960ull,    16384ull,
+    131072ull,    327680ull,
+    655360ull,    1310720ull,
+    2621440ull,    5242880ull,
+    10485760ull,    4194304ull,
+    33554432ull,    83886080ull,
+    167772160ull,    335544320ull,
+    671088640ull,    1342177280ull,
+    2684354560ull,    1073741824ull,
+    8589934592ull,    21474836480ull,
+    42949672960ull,    85899345920ull,
+    171798691840ull,    343597383680ull,
+    687194767360ull,    274877906944ull,
+    2199023255552ull,    5497558138880ull,
+    10995116277760ull,    21990232555520ull,
+    43980465111040ull,    87960930222080ull,
+    175921860444160ull,    70368744177664ull,
+    562949953421312ull,    1407374883553280ull,
+    2814749767106560ull,    5629499534213120ull,
+    11258999068426240ull,    22517998136852480ull,
+    45035996273704960ull,    18014398509481984ull
+};
+
+const uint64_t BLACK_BEHIND_DIAGONAL_MASK[64] = {
+    512ull,    1280ull,
+    2560ull,    5120ull,
+    10240ull,    20480ull,
+    40960ull,    16384ull,
+    131072ull,    327680ull,
+    655360ull,    1310720ull,
+    2621440ull,    5242880ull,
+    10485760ull,    4194304ull,
+    33554432ull,    83886080ull,
+    167772160ull,    335544320ull,
+    671088640ull,    1342177280ull,
+    2684354560ull,    1073741824ull,
+    8589934592ull,    21474836480ull,
+    42949672960ull,    85899345920ull,
+    171798691840ull,    343597383680ull,
+    687194767360ull,    274877906944ull,
+    2199023255552ull,    5497558138880ull,
+    10995116277760ull,    21990232555520ull,
+    43980465111040ull,    87960930222080ull,
+    175921860444160ull,    70368744177664ull,
+    562949953421312ull,    1407374883553280ull,
+    2814749767106560ull,    5629499534213120ull,
+    11258999068426240ull,    22517998136852480ull,
+    45035996273704960ull,    18014398509481984ull,
+    144115188075855872ull,    360287970189639680ull,
+    720575940379279360ull,    1441151880758558720ull,
+    2882303761517117440ull,    5764607523034234880ull,
+    11529215046068469760ull,    4611686018427387904ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull
+};
+
 // Helper: Set a bit
 inline void set_bit(uint64_t& bb, int square) {
     bb |= (1ULL << square);
@@ -635,6 +740,78 @@ void generate_left_and_right_column_masks() {
     cout << "};\n";
 }
 
+uint64_t left_right_adjacent_mask(int square) {
+    int file = square % 8;
+    int rank = square / 8;
+    uint64_t mask = 0;
+
+    if (file > 0)
+        mask |= 1ULL << (square - 1);
+    if (file < 7)
+        mask |= 1ULL << (square + 1);
+
+    return mask;
+}
+
+void generate_left_right_square_masks() {
+    cout << "const uint64_t LEFT_RIGHT_SQUARE_MASK[64] = {\n";
+    for (int i = 0; i < 64; ++i) {
+        cout << "    " << left_right_adjacent_mask(i) << "ull";
+        if (i != 63) cout << ",";
+        if (i % 2 == 1) cout << "\n";
+    }
+    cout << "};\n";
+}
+
+uint64_t white_behind_diagonal_mask(int square) {
+    int file = square % 8;
+    int rank = square / 8;
+    uint64_t mask = 0;
+
+    if (rank > 0) {
+        if (file > 0)
+            mask |= 1ULL << (square - 9); // back-left
+        if (file < 7)
+            mask |= 1ULL << (square - 7); // back-right
+    }
+
+    return mask;
+}
+
+uint64_t black_behind_diagonal_mask(int square) {
+    int file = square % 8;
+    int rank = square / 8;
+    uint64_t mask = 0;
+
+    if (rank < 7) {
+        if (file > 0)
+            mask |= 1ULL << (square + 7); // back-left from Black's view
+        if (file < 7)
+            mask |= 1ULL << (square + 9); // back-right from Black's view
+    }
+
+    return mask;
+}
+
+void generate_behind_diagonal_masks() {
+    cout << "const uint64_t WHITE_BEHIND_DIAGONAL_MASK[64] = {\n";
+    for (int i = 0; i < 64; ++i) {
+        cout << "    " << white_behind_diagonal_mask(i) << "ull";
+        if (i != 63) cout << ",";
+        if (i % 2 == 1) cout << "\n";
+    }
+    cout << "};\n\n";
+
+    cout << "const uint64_t BLACK_BEHIND_DIAGONAL_MASK[64] = {\n";
+    for (int i = 0; i < 64; ++i) {
+        cout << "    " << black_behind_diagonal_mask(i) << "ull";
+        if (i != 63) cout << ",";
+        if (i % 2 == 1) cout << "\n";
+    }
+    cout << "};\n";
+}
+
+
 
 
 // Test
@@ -701,9 +878,23 @@ int main() {
 
     // generate_left_and_right_column_masks();
 
-    print_bitboard(LEFT_RIGHT_COLUMN_MASK[A1]);
-    print_bitboard(LEFT_RIGHT_COLUMN_MASK[A8]);
-    print_bitboard(LEFT_RIGHT_COLUMN_MASK[E3]);
+    // print_bitboard(LEFT_RIGHT_COLUMN_MASK[A1]);
+    // print_bitboard(LEFT_RIGHT_COLUMN_MASK[A8]);
+    // print_bitboard(LEFT_RIGHT_COLUMN_MASK[E3]);
+
+    // generate_left_right_square_masks();
+    // print_bitboard(LEFT_RIGHT_SQUARE_MASK[A1]);
+    // print_bitboard(LEFT_RIGHT_SQUARE_MASK[E8]);
+    // print_bitboard(LEFT_RIGHT_SQUARE_MASK[E4]);
+
+    // generate_behind_diagonal_masks();
+    // print_bitboard(WHITE_BEHIND_DIAGONAL_MASK[A1]);
+    // print_bitboard(WHITE_BEHIND_DIAGONAL_MASK[E8]);
+    // print_bitboard(WHITE_BEHIND_DIAGONAL_MASK[E4]);
+    // print_bitboard(BLACK_BEHIND_DIAGONAL_MASK[A8]);
+    // print_bitboard(BLACK_BEHIND_DIAGONAL_MASK[E7]);
+    // print_bitboard(BLACK_BEHIND_DIAGONAL_MASK[E4]);
+
 
     return 0;
 
