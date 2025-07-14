@@ -107,6 +107,13 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
         Move current_move = capture_moves[idx];
 
+        // Pessimisim - assume worst case that we lose out piece immediately
+        int32_t pessimism = move_estimated_value(board, current_move) - see_piece_values[static_cast<int32_t>(board.at(current_move.from()).type().internal())];
+        
+        // Short-circuit QS and assume a stand-pat matches the SEE
+        if (eval + pessimism > beta) 
+            return beta;
+
         // QSEE pruning, if a move is obviously losing, don't search it
         if (!see_bools[idx]) continue;
 
