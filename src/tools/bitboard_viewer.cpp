@@ -330,6 +330,146 @@ const uint64_t LEFT_RIGHT_COLUMN_MASK[64] = {
     11574427654092267680ull,    4629771061636907072ull
 };
 
+const uint64_t WHITE_DIAGONAL_UP_THEN_FORWARD_MASK[64] = {
+    131072ull,    327680ull,
+    655360ull,    1310720ull,
+    2621440ull,    5242880ull,
+    10485760ull,    4194304ull,
+    33554432ull,    83886080ull,
+    167772160ull,    335544320ull,
+    671088640ull,    1342177280ull,
+    2684354560ull,    1073741824ull,
+    8589934592ull,    21474836480ull,
+    42949672960ull,    85899345920ull,
+    171798691840ull,    343597383680ull,
+    687194767360ull,    274877906944ull,
+    2199023255552ull,    5497558138880ull,
+    10995116277760ull,    21990232555520ull,
+    43980465111040ull,    87960930222080ull,
+    175921860444160ull,    70368744177664ull,
+    562949953421312ull,    1407374883553280ull,
+    2814749767106560ull,    5629499534213120ull,
+    11258999068426240ull,    22517998136852480ull,
+    45035996273704960ull,    18014398509481984ull,
+    144115188075855872ull,    360287970189639680ull,
+    720575940379279360ull,    1441151880758558720ull,
+    2882303761517117440ull,    5764607523034234880ull,
+    11529215046068469760ull,    4611686018427387904ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull
+};
+
+const uint64_t BLACK_DIAGONAL_DOWN_THEN_FORWARD_MASK[64] = {
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    2ull,    5ull,
+    10ull,    20ull,
+    40ull,    80ull,
+    160ull,    64ull,
+    512ull,    1280ull,
+    2560ull,    5120ull,
+    10240ull,    20480ull,
+    40960ull,    16384ull,
+    131072ull,    327680ull,
+    655360ull,    1310720ull,
+    2621440ull,    5242880ull,
+    10485760ull,    4194304ull,
+    33554432ull,    83886080ull,
+    167772160ull,    335544320ull,
+    671088640ull,    1342177280ull,
+    2684354560ull,    1073741824ull,
+    8589934592ull,    21474836480ull,
+    42949672960ull,    85899345920ull,
+    171798691840ull,    343597383680ull,
+    687194767360ull,    274877906944ull,
+    2199023255552ull,    5497558138880ull,
+    10995116277760ull,    21990232555520ull,
+    43980465111040ull,    87960930222080ull,
+    175921860444160ull,    70368744177664ull
+};
+
+const uint64_t BLACK_ADJ_FILES_UPWARD_MASK[64] = {
+    144680345676153344ull,    361700864190383360ull,
+    723401728380766720ull,    1446803456761533440ull,
+    2893606913523066880ull,    5787213827046133760ull,
+    11574427654092267520ull,    4629771061636907008ull,
+    144680345676152832ull,    361700864190382080ull,
+    723401728380764160ull,    1446803456761528320ull,
+    2893606913523056640ull,    5787213827046113280ull,
+    11574427654092226560ull,    4629771061636890624ull,
+    144680345676021760ull,    361700864190054400ull,
+    723401728380108800ull,    1446803456760217600ull,
+    2893606913520435200ull,    5787213827040870400ull,
+    11574427654081740800ull,    4629771061632696320ull,
+    144680345642467328ull,    361700864106168320ull,
+    723401728212336640ull,    1446803456424673280ull,
+    2893606912849346560ull,    5787213825698693120ull,
+    11574427651397386240ull,    4629771060558954496ull,
+    144680337052532736ull,    361700842631331840ull,
+    723401685262663680ull,    1446803370525327360ull,
+    2893606741050654720ull,    5787213482101309440ull,
+    11574426964202618880ull,    4629770785681047552ull,
+    144678138029277184ull,    361695345073192960ull,
+    723390690146385920ull,    1446781380292771840ull,
+    2893562760585543680ull,    5787125521171087360ull,
+    11574251042342174720ull,    4629700416936869888ull,
+    144115188075855872ull,    360287970189639680ull,
+    720575940379279360ull,    1441151880758558720ull,
+    2882303761517117440ull,    5764607523034234880ull,
+    11529215046068469760ull,    4611686018427387904ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull
+};
+
+const uint64_t WHITE_ADJ_FILES_DOWNWARD_MASK[64] = {
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    0ull,    0ull,
+    2ull,    5ull,
+    10ull,    20ull,
+    40ull,    80ull,
+    160ull,    64ull,
+    514ull,    1285ull,
+    2570ull,    5140ull,
+    10280ull,    20560ull,
+    41120ull,    16448ull,
+    131586ull,    328965ull,
+    657930ull,    1315860ull,
+    2631720ull,    5263440ull,
+    10526880ull,    4210752ull,
+    33686018ull,    84215045ull,
+    168430090ull,    336860180ull,
+    673720360ull,    1347440720ull,
+    2694881440ull,    1077952576ull,
+    8623620610ull,    21559051525ull,
+    43118103050ull,    86236206100ull,
+    172472412200ull,    344944824400ull,
+    689889648800ull,    275955859520ull,
+    2207646876162ull,    5519117190405ull,
+    11038234380810ull,    22076468761620ull,
+    44152937523240ull,    88305875046480ull,
+    176611750092960ull,    70644700037184ull,
+    565157600297474ull,    1412894000743685ull,
+    2825788001487370ull,    5651576002974740ull,
+    11303152005949480ull,    22606304011898960ull,
+    45212608023797920ull,    18085043209519168ull
+};
+
 // Helper: Set a bit
 inline void set_bit(uint64_t& bb, int square) {
     bb |= (1ULL << square);
@@ -637,6 +777,54 @@ void generate_left_and_right_column_masks() {
 
 
 
+uint64_t white_diagonal_up_then_forward(int square) {
+    int file = square % 8;
+    int rank = square / 8;
+    uint64_t mask = 0;
+
+    if (rank <= 5) {
+        if (file > 0)
+            mask |= 1ULL << (square + 7 + 8); // up-left then forward
+        if (file < 7)
+            mask |= 1ULL << (square + 9 + 8); // up-right then forward
+    }
+
+    return mask;
+}
+
+uint64_t black_diagonal_down_then_forward(int square) {
+    int file = square % 8;
+    int rank = square / 8;
+    uint64_t mask = 0;
+
+    if (rank >= 2) {
+        if (file > 0)
+            mask |= 1ULL << (square - 9 - 8); // down-left then forward
+        if (file < 7)
+            mask |= 1ULL << (square - 7 - 8); // down-right then forward
+    }
+
+    return mask;
+}
+
+void generate_masks() {
+    cout << "const uint64_t WHITE_DIAGONAL_UP_THEN_FORWARD_MASK[64] = {\n";
+    for (int i = 0; i < 64; ++i) {
+        cout << "    " << white_diagonal_up_then_forward(i) << "ull";
+        if (i != 63) cout << ",";
+        if (i % 2 == 1) cout << "\n";
+    }
+    cout << "};\n\n";
+
+    cout << "const uint64_t BLACK_DIAGONAL_DOWN_THEN_FORWARD_MASK[64] = {\n";
+    for (int i = 0; i < 64; ++i) {
+        cout << "    " << black_diagonal_down_then_forward(i) << "ull";
+        if (i != 63) cout << ",";
+        if (i % 2 == 1) cout << "\n";
+    }
+    cout << "};\n";
+}
+
 // Test
 int main() {
     /*
@@ -701,9 +889,27 @@ int main() {
 
     // generate_left_and_right_column_masks();
 
-    print_bitboard(LEFT_RIGHT_COLUMN_MASK[A1]);
-    print_bitboard(LEFT_RIGHT_COLUMN_MASK[A8]);
-    print_bitboard(LEFT_RIGHT_COLUMN_MASK[E3]);
+    // print_bitboard(LEFT_RIGHT_COLUMN_MASK[A1]);
+    // print_bitboard(LEFT_RIGHT_COLUMN_MASK[A8]);
+    // print_bitboard(LEFT_RIGHT_COLUMN_MASK[E3]);
+    
+    //generate_masks();
+    
+    /*
+    print_bitboard(WHITE_DIAGONAL_UP_THEN_FORWARD_MASK[A1]);
+    print_bitboard(WHITE_DIAGONAL_UP_THEN_FORWARD_MASK[A8]);
+    print_bitboard(WHITE_DIAGONAL_UP_THEN_FORWARD_MASK[E3]);
+
+    print_bitboard(BLACK_DIAGONAL_DOWN_THEN_FORWARD_MASK[A1]);
+    print_bitboard(BLACK_DIAGONAL_DOWN_THEN_FORWARD_MASK[A8]);
+    print_bitboard(BLACK_DIAGONAL_DOWN_THEN_FORWARD_MASK[E3]);
+    */
+
+    // generate_adjacent_file_directional_masks();
+    print_bitboard(BLACK_ADJ_FILES_UPWARD_MASK[E4]);
+    print_bitboard(BLACK_ADJ_FILES_UPWARD_MASK[H4]);
+    print_bitboard(WHITE_ADJ_FILES_DOWNWARD_MASK[E4]);
+    print_bitboard(WHITE_ADJ_FILES_DOWNWARD_MASK[H4]);
 
     return 0;
 
