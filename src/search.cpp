@@ -29,6 +29,11 @@ int64_t total_nodes = 0;
 // Highest searched depth
 int32_t seldpeth = 0;
 
+// Best search score at root
+int32_t best_root_score = 0;
+
+// Qsearch score at root
+int32_t root_qsearch_score = 0;
 
 // Quiescence search. When we are in a noisy position (there are captures), we try to "quiet" the position by
 // going down capture trees using negamax and return the eval when we re in a quiet position
@@ -484,6 +489,7 @@ int32_t search_root(Board &board){
         int32_t delta = aspiration_window_delta.current;
         int32_t alpha = DEFAULT_ALPHA;
         int32_t beta = DEFAULT_BETA;
+        root_qsearch_score = q_search(board, DEFAULT_ALPHA, DEFAULT_BETA, 0);
         while ((global_depth == 0 || !soft_bound_time_exceeded()) && global_depth < MAX_SEARCH_DEPTH){
             // Increment the global depth since global_depth starts from 0
             global_depth++;
@@ -542,7 +548,8 @@ int32_t search_root(Board &board){
             }
 
             score = new_score;
-            
+            best_root_score = score;
+
         }
     }
 

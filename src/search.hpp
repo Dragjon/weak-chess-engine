@@ -34,6 +34,9 @@ extern int64_t total_nodes_per_search;
 extern int64_t total_nodes;
 
 extern int32_t seldpeth;
+extern int32_t best_root_score;
+
+extern int32_t root_qsearch_score;
 
 // Search Function
 // We are basically using a fail soft "negamax" search, see here for more info: https://minuskelvin.net/chesswiki/content/minimax.html#negamax
