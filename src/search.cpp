@@ -488,8 +488,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         return alpha;
     }
 
-    // Don't store TT in singular searches
-    if (search_info.excluded == 0){
+    // Don't store TT in singular searches and don't overwrite root move
+    if (search_info.excluded == 0 && !is_root){
         NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
         uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
