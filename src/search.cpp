@@ -258,7 +258,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // do NMP when tt suggests that it should fail immediately
     if (!pv_node && !node_is_check && static_eval >= beta && depth >= null_move_depth.current && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) && search_info.excluded == 0){
         board.makeNullMove();
-        int32_t reduction = 3 + depth / 6;
+        int32_t reduction = 4 + depth / 5;
                                                                                         
         // Search has no parents :(
         SearchInfo info{};                                                                   
