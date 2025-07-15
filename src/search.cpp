@@ -465,16 +465,20 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                             move_piece = static_cast<int32_t>(board.at(quiet.from()).internal());
 
                             // Quiet History Malus
-                            quiet_history[turn][from][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_bonus_base.current;
+                            if (move_count > 1 && !board.isCapture(current_best_move)){
+                                quiet_history[turn][from][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_bonus_base.current;
+                            }
 
                             // Conthist Malus
                             // 1-ply (Countermoves)
-                            if (parent_move_piece != -1 && parent_move_square != -1)
+                            if (parent_move_piece != -1 && parent_move_square != -1){
                                 one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] -= 300 * depth * depth + 280 * depth + 50;
+                            }
 
                             // 2-ply (Follow-up moves)
-                            if (parent_parent_move_piece != -1 && parent_parent_move_square != -1)
+                            if (parent_parent_move_piece != -1 && parent_parent_move_square != -1){
                                 two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  -= 300 * depth * depth + 280 * depth + 50;
+                            }
                         }
                     }
 
