@@ -13,11 +13,6 @@ int32_t lsb(uint64_t bb) {
     return __builtin_ctzll(bb);
 }
 
-// Helper: Count no. set bits
-int32_t count(uint64_t bb){
-    return __builtin_popcountll(bb);
-}
-
 // Passed pawn masks
 const uint64_t WHITE_PASSED_MASK[64] = {
     217020518514230016ull,    506381209866536704ull,
@@ -342,30 +337,4 @@ bool is_white_passed_pawn(int32_t square, uint64_t black_pawns) {
 // Check if square is passed pawn for black
 bool is_black_passed_pawn(int32_t square, uint64_t white_pawns) {
     return (BLACK_PASSED_MASK[square] & white_pawns) == 0;
-}
-
-// Count passed pawns for white
-int32_t count_white_passed_pawns(uint64_t white_pawns, uint64_t black_pawns) {
-    int32_t count = 0;
-    uint64_t bb = white_pawns;
-    while (bb) {
-        int sq = __builtin_ctzll(bb); // or lsb(bb)
-        if (is_white_passed_pawn(sq, black_pawns))
-            ++count;
-        bb &= bb - 1; // Clear least significant bit
-    }
-    return count;
-}
-
-// Count passed pawns for black
-int32_t count_black_passed_pawns(uint64_t black_pawns, uint64_t white_pawns) {
-    int count = 0;
-    uint64_t bb = black_pawns;
-    while (bb) {
-        int32_t sq = __builtin_ctzll(bb); // or lsb(bb)
-        if (is_black_passed_pawn(sq, white_pawns))
-            ++count;
-        bb &= bb - 1;
-    }
-    return count;
 }
