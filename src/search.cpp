@@ -349,11 +349,17 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             info.excluded = 0;
 
+            // Singular extension
             if (score < singular_beta)
                 extension = 1;
 
+            // SE beta cutoff
             else if (singular_beta >= beta)
                 return singular_beta;
+
+            // Negative extensions
+            else if (entry.best_move >= beta)
+                extension = -1;
         }
 
         // Quiet late moves reduction - we have to trust that our
