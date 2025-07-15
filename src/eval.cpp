@@ -270,17 +270,13 @@ int32_t evaluate(const chess::Board& board) {
     uint64_t white_king_inner_sq_mask = chess::attacks::king(whiteKingSq).getBits();
     uint64_t black_king_inner_sq_mask = chess::attacks::king(blackKingSq).getBits();
 
-    // Keep track of rooks on open files for updating after loop
-    // int32_t num_w_rooks_on_op_file = 0;
-    // int32_t num_b_rooks_on_op_file = 0;
-
     // A fast way of getting all the pieces 
     for (int32_t i = 0; i < 12; i++){        
         chess::Bitboard curr_bb = all[i];
         while (!curr_bb.empty()) {
-            int16_t sq = curr_bb.pop();
+            int32_t sq = curr_bb.pop();
             bool is_white = i < 6;
-            int16_t j = is_white ? i : i-6;
+            int32_t j = is_white ? i : i-6;
 
             // Phase for tapered evaluation
             phase += game_phase_increment[j];
@@ -299,30 +295,22 @@ int32_t evaluate(const chess::Board& board) {
                     // knights
                     case 1:
                         attacks_bb = chess::attacks::knight(static_cast<chess::Square>(sq)).getBits();
-                        attacks = count(attacks_bb);
+                        attacks = __builtin_popcountll(attacks_bb);
                         break;
                     // bishops
                     case 2:
                         attacks_bb = chess::attacks::bishop(static_cast<chess::Square>(sq), board.occ()).getBits();
-                        attacks = count(attacks_bb);
+                        attacks = __builtin_popcountll(attacks_bb);
                         break;
                     // rooks
                     case 3:
-                        // Rook on open file
-                        /*
-                        if ((is_white ? (WHITE_AHEAD_MASK[sq] & wp & bp) : (BLACK_AHEAD_MASK[sq] & wp & bp)) == 0ull){
-                            if (is_white) num_w_rooks_on_op_file++;
-                            else num_b_rooks_on_op_file++;
-                        }
-                        */
-
                         attacks_bb = chess::attacks::rook(static_cast<chess::Square>(sq), board.occ()).getBits();
-                        attacks = count(attacks_bb);
+                        attacks = __builtin_popcountll(attacks_bb);
                         break;
                     // queens
                     case 4:
                         attacks_bb = chess::attacks::queen(static_cast<chess::Square>(sq), board.occ()).getBits();
-                        attacks = count(attacks_bb);
+                        attacks = __builtin_popcountll(attacks_bb);
                         break;
                     // King Virtual Mobility
                     case 5:
@@ -332,12 +320,16 @@ int32_t evaluate(const chess::Board& board) {
                     default:
                         break;
                 }
+
+                // Mobilities
                 eval_array[is_white ? 0 : 1] += mobilities[j-1][attacks];
                 
                 // Non king non pawn pieces
                 if (j < 5){
-                    eval_array[is_white ? 0 : 1] += inner_king_zone_attacks[j-1]  * count((is_white ? black_king_inner_sq_mask : white_king_inner_sq_mask) & attacks_bb); 
-                    eval_array[is_white ? 0 : 1] += outer_king_zone_attacks[j-1]  * count((is_white ? black_king_2_sq_mask : white_king_2_sq_mask) & attacks_bb); 
+                    
+                    // King zone attacks
+                    eval_array[is_white ? 0 : 1] += inner_king_zone_attacks[j-1]  * __builtin_popcountll((is_white ? black_king_inner_sq_mask : white_king_inner_sq_mask) & attacks_bb); 
+                    eval_array[is_white ? 0 : 1] += outer_king_zone_attacks[j-1]  * __builtin_popcountll((is_white ? black_king_2_sq_mask : white_king_2_sq_mask) & attacks_bb); 
                 }
             }
 
@@ -348,8 +340,9 @@ int32_t evaluate(const chess::Board& board) {
                 // of another pawn
                 uint64_t front_mask = is_white ? WHITE_AHEAD_MASK[sq] : BLACK_AHEAD_MASK[sq];
                 uint64_t our_pawn_bb = is_white ? wp.getBits() : bp.getBits();
-                if (front_mask & our_pawn_bb)
+                if (front_mask & our_pawn_bb){
                     eval_array[is_white ? 0 : 1] += doubled_pawn_penalty[is_white ? 7 - sq % 8 : sq % 8];
+                }
 
                 // Passed pawn
                 if (is_white ? is_white_passed_pawn(sq, bp.getBits()): is_black_passed_pawn(sq, wp.getBits())){
@@ -372,12 +365,12 @@ int32_t evaluate(const chess::Board& board) {
             if (j == 5) attacks_bb = chess::attacks::king(static_cast<chess::Square>(sq)).getBits();
 
             // Threats
-            int32_t num_pawn_attacks = is_white ? count(attacks_bb & bp.getBits()) : count(attacks_bb & wp.getBits());
-            int32_t num_knight_attacks = is_white ? count(attacks_bb & bn.getBits()) : count(attacks_bb & wn.getBits());
-            int32_t num_bishop_attacks = is_white ? count(attacks_bb & bb.getBits()) : count(attacks_bb & wb.getBits());
-            int32_t num_rook_attacks = is_white ? count(attacks_bb & br.getBits()) : count(attacks_bb & wr.getBits());
-            int32_t num_queen_attacks = is_white ? count(attacks_bb & bq.getBits()) : count(attacks_bb & wq.getBits());
-            int32_t num_king_attacks = is_white ? count(attacks_bb & bk.getBits()) : count(attacks_bb & wk.getBits());
+            int32_t num_pawn_attacks = is_white ? __builtin_popcountll(attacks_bb & bp.getBits()) : __builtin_popcountll(attacks_bb & wp.getBits());
+            int32_t num_knight_attacks = is_white ? __builtin_popcountll(attacks_bb & bn.getBits()) : __builtin_popcountll(attacks_bb & wn.getBits());
+            int32_t num_bishop_attacks = is_white ? __builtin_popcountll(attacks_bb & bb.getBits()) : __builtin_popcountll(attacks_bb & wb.getBits());
+            int32_t num_rook_attacks = is_white ? __builtin_popcountll(attacks_bb & br.getBits()) : __builtin_popcountll(attacks_bb & wr.getBits());
+            int32_t num_queen_attacks = is_white ? __builtin_popcountll(attacks_bb & bq.getBits()) : __builtin_popcountll(attacks_bb & wq.getBits());
+            int32_t num_king_attacks = is_white ? __builtin_popcountll(attacks_bb & bk.getBits()) : __builtin_popcountll(attacks_bb & wk.getBits());
 
             eval_array[is_white ? 0 : 1] += threats[j][0] * num_pawn_attacks;
             eval_array[is_white ? 0 : 1] += threats[j][1] * num_knight_attacks;
@@ -389,14 +382,6 @@ int32_t evaluate(const chess::Board& board) {
         }
 
     }
-
-    // Rooks on open files
-    /*
-    if (num_w_rooks_on_op_file == 1) eval_array[0] += rook_open_file[0];
-    if (num_w_rooks_on_op_file == 2) eval_array[0] += rook_open_file[1];
-    if (num_b_rooks_on_op_file == 1) eval_array[1] += rook_open_file[0];
-    if (num_b_rooks_on_op_file == 2) eval_array[1] += rook_open_file[1];
-    */
 
     // Bishop Pair
     if (wb.count() == 2) eval_array[0] += bishop_pair;
