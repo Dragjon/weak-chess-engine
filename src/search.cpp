@@ -354,6 +354,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             else if (singular_beta >= beta)
                 return singular_beta;
+            else if (entry.score <= alpha && cut_node)
+                extension = -1;
         }
 
         // Static Exchange Evaluation Pruning
@@ -378,7 +380,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         board.makeMove(current_move);
 
         // Check extension, we increase the depth of moves that give check
-        if (board.inCheck())
+        if (!do_singular_search && board.inCheck())
             extension++;
 
         quiets_searched[quiets_searched_idx++] = current_move;
