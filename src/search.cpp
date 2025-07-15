@@ -102,7 +102,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     for (int idx = 0; idx < capture_moves.size(); idx++){
 
         // QSearch movecount pruning
-        if (!board.inCheck() && moves_played >= 2)
+        if (!board.inCheck() && moves_played >= 1)
             break;
 
         Move current_move = capture_moves[idx];
