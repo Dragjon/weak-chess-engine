@@ -1,4 +1,4 @@
-// error 0.0764604
+// error 0.0764196
 
 #include <stdint.h>
 
@@ -14,9 +14,65 @@ using namespace std;
 // Entire evaluation function is tuned with non other than Gedas' Texel tuner <3
 // https://github.com/GediminasMasaitis/texel-tuner
 
+/////////////////////////////////
+// HCE Evaluation description ///
+/////////////////////////////////
+
+// 1. 
+// PST
 // Piece Square Tables (which includes the material value of each piece)
 // Each piece type has its own piece square table, whiched it used
 // to evaluate its positioning on the board
+
+// 2. 
+// Mobility Eval
+// Each piece type can attack at most 28 squares in any given turn. In
+// general, the more squares a piece attacks the better. But for example
+// pieces like queens may get negative mobility in the opening to prevent
+// early queen moves. The 4th index (index 5) of the mobilities array is 
+// dedicated to king virtual mobility. That is putting a queen on a king sq
+// and getting the mobility of the queen from there. This helps to position
+// the king away from open rays
+
+// 3.
+// Bishop pair evaluation
+// Bishop pair eval is a pretty good eval heuristic for HCE engines and is
+// pretty intuitive to implement.
+
+// 4.
+// Passed pawn bonus
+// Passed pawns are given a bonus indexed by which square they are on. Passed
+// pawns that are more advanced generally have higher scores.
+
+// 5. / 6.
+// King zone attacks 
+// Bonus for pieces (not pawns or kings) which attack squares near the opponent
+// king. This includes the square directly surrounding the opponent king and also
+// 1 square away from the king
+
+// 7. 
+// Doubled pawn penalty
+// Doubled pawns are given a penalty depending on which file they are on. This is
+// a pretty strong eval feature and is also easy to understand. Doubled pawns
+// (NOT stacked pawns) are pawns that are on the same file. It is usually bad
+// to have doubled pawns
+
+// 8.
+// Pawn storm
+// Pawns on the other half of the board without the king are given a different
+// bonus-table. This could encourage those pawns to move more freely and participate
+// in a "pawn storm" to attack the king
+
+// 9.
+// Isolated pawns
+// Isolated pawns are given a penalty depending on which square they are on. Being
+// isolated is defined as pawns whose adjacent files have no other friendly pawns.
+
+// 10.
+// Threats
+// Threats are attacks that are made by a friendly piece to an enemy piece. This is
+// indexed by [our piece][their piece]. This could make our evaluation more accurate
+
 const int32_t PSQT[6][64] = {
     {
         S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0),
@@ -81,14 +137,7 @@ const int32_t PSQT[6][64] = {
 };
 
 
-// Mobility Eval
-// Each piece type can attack at most 28 squares in any given turn. In
-// general, the more squares a piece attacks the better. But for example
-// pieces like queens may get negative mobility in the opening to prevent
-// early queen moves. The 4th index (index 5) of the mobilities array is 
-// dedicated to king virtual mobility. That is putting a queen on a king sq
-// and getting the mobility of the queen from there. This helps to position
-// the king away from open rays
+
 const int32_t mobilities[5][28] = {
 
     {
@@ -109,11 +158,9 @@ const int32_t mobilities[5][28] = {
 };
 
 
-// Bishop pair evaluation
 const int32_t bishop_pair = S(19, 59);
 
 
-// Passed pawn bonus
 const int32_t passed_pawns[64] = {
     S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0),
     S(40, 183), S(72, 197), S(64, 180), S(71, 145), S(74, 119), S(73, 130), S(46, 152), S(30, 159),
@@ -126,26 +173,21 @@ const int32_t passed_pawns[64] = {
 };
 
 
-// King Zone Attacks
-// Bonus for pieces (not pawns or kings) which attack squares near the king
 const int32_t inner_king_zone_attacks[4] = {
     S(10, -6), S(19, -4), S(21, -7), S(13, 6),
 };
 
 
-// Attacking the ring 1 square away from the king square 
 const int32_t outer_king_zone_attacks[4] = {
     S(0, 1), S(0, 0), S(3, -4), S(2, 0),
 };
 
 
-// Doubled pawn penalty
 const int32_t doubled_pawn_penalty[8] = {
     S(0, -41), S(0, -27), S(-4, -24), S(-4, -10), S(-3, -20), S(-5, -23), S(-2, -25), S(-7, -36),
 };
 
 
-// Pawn storm
 const int32_t pawn_storm[64] = {
     S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0),
     S(16, -59), S(-38, -52), S(-5, -91), S(-13, -50), S(-57, 49), S(-43, -11), S(-4, -9), S(-41, 2),
@@ -158,7 +200,6 @@ const int32_t pawn_storm[64] = {
 };
 
 
-// Isolated pawns
 const int32_t isolated_pawns[64] = {
     S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0), S(0, 0),
     S(47, -25), S(110, -106), S(52, -7), S(52, -6), S(21, 3), S(5, 26), S(-26, 21), S(0, 1),
@@ -171,7 +212,6 @@ const int32_t isolated_pawns[64] = {
 };
 
 
-// Threats
 const int32_t threats[6][6] = {
     {
         S(3, -9), S(11, -44), S(25, -30), S(-21, -26), S(-11, -61), S(-86, 2),
