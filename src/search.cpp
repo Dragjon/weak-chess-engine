@@ -356,16 +356,16 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 return singular_beta;
         }
 
+        // Static Exchange Evaluation Pruning
+        int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
+        if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
+            continue;
+
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
         if (!is_noisy_move && depth >= late_move_reduction_depth.current)
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
-
-        // Static Exchange Evaluation Pruning
-        int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
-        if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
-            continue;
 
         int32_t score = 0;
         bool turn = board.sideToMove() == chess::Color::WHITE;
