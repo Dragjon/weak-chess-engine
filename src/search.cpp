@@ -227,7 +227,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Transposition Table cutoffs
     // Only cut with a greater or equal depth search
-    if (!pv_node && entry.depth >= depth && !is_root && tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && search_info.excluded == 0)
+    if (tt_hit && entry.depth >= depth && (depth == 0 || !pv_node) && (cut_node || entry.score <= alpha) && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && search_info.excluded == 0)
         return entry.score;
 
     // Static evaluation for pruning metrics
@@ -489,7 +489,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     }
 
     // Don't store TT in singular searches
-    if (search_info.excluded == 0){
+    if (search_info.excluded == 0 && !is_root){
         NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
         uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
