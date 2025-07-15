@@ -349,8 +349,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             info.excluded = 0;
 
-            if (score < singular_beta)
-                extension = 1;
+            // Default values yoinked from Sirius
+            if (score < singular_beta){
+                if (!pv_node && score < singular_beta - 11)
+                    extension = 2;
+                else
+                    extension = 1;
+            }
         }
 
         // Quiet late moves reduction - we have to trust that our
