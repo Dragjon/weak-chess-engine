@@ -233,6 +233,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Static evaluation for pruning metrics
     int32_t static_eval = evaluate(board);
 
+    // Opponent worsening heuristic
+    bool opponent_worsening = !node_is_check && !is_root && search_info.prev_eval != -100000 && -static_eval < search_info.prev_eval;
+
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
@@ -240,7 +243,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0)
+    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth + (opponent_worsening ? 0 : 10) >= beta && search_info.excluded == 0)
         return static_eval;
 
     // Razoring / Alpha pruning
@@ -336,6 +339,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
         SearchInfo info{};
+        info.prev_eval = static_eval;
         bool do_singular_search =  !is_root &&  depth >= 6 &&  current_move.move() == entry.best_move &&  entry.depth >= depth - 3 && (entry.type == NodeType::LOWERBOUND) && search_info.excluded == 0;
 
         if (do_singular_search)
