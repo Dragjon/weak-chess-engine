@@ -332,6 +332,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 break;
             }
         }
+        
+        // Static Exchange Evaluation Pruning
+        int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
+        if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
+            continue;
 
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
@@ -355,11 +360,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             else if (singular_beta >= beta)
                 return singular_beta;
         }
-
-        // Static Exchange Evaluation Pruning
-        int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
-        if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
-            continue;
 
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
