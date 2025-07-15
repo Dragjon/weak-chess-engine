@@ -351,6 +351,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             if (score < singular_beta)
                 extension = 1;
+
+            else if (singular_beta >= beta)
+                return singular_beta;
         }
 
         // Quiet late moves reduction - we have to trust that our
