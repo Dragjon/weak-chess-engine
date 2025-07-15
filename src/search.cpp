@@ -324,7 +324,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 continue;
             }
             // Futility Pruning
-            if (depth < 5 && !pv_node && !node_is_check && (static_eval + 100) + 100 * depth <= alpha) {
+            if (depth < 5 && !pv_node && !node_is_check && (static_eval + 100) + 100 * depth + move_history / 400 <= alpha) {
                 continue;
             }            
             // Quiet History Pruning
