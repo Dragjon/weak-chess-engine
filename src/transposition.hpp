@@ -19,6 +19,7 @@ struct TTEntry {
     uint64_t key = 0; // Zobrist hash
     int32_t score = 0; // Score 
     int32_t depth = -1; // Depth
+    int32_t ply = -1; // Ply from root
     NodeType type = NodeType::EXACT;
     uint16_t best_move = 0; // Encoded move
 };
@@ -44,12 +45,12 @@ public:
         table.resize(size);
     }
 
-    void store(uint64_t key, int32_t score, int32_t depth, NodeType type, uint16_t bestMove) {
+    void store(uint64_t key, int32_t score, int32_t depth, int32_t ply, NodeType type, uint16_t bestMove) {
         size_t index = key % size;
         TTEntry& entry = table[index];
 
         if (entry.key == 0 || entry.depth <= depth) {
-            entry = TTEntry{ key, score, depth, type, bestMove };
+            entry = TTEntry{ key, score, depth, ply, type, bestMove };
         }
     }
 

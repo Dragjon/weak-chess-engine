@@ -134,11 +134,13 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         }
     }
 
-    NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : best_score > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
-    uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
+    if (!tt_hit || (tt_hit && entry.key != zobrists_key && entry.ply <= ply)){
+        NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : best_score > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
+        uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
-    // Storing transpositions
-    tt.store(zobrists_key, clamp(best_score, -40000, 40000), 0, bound, best_move_tt);
+        // Storing transpositions
+        tt.store(zobrists_key, clamp(best_score, -40000, 40000), 0, ply, bound, best_move_tt);
+    }
 
     return best_score;
 }
@@ -490,11 +492,15 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Don't store TT in singular searches
     if (search_info.excluded == 0){
-        NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
-        uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
+        // TT Hash collision! Our TT replacement scheme is simple
+        // keep the TT with the highest ply from root
+        if (!tt_hit || (tt_hit && entry.key != zobrists_key && entry.ply <= ply)){
+            NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
+            uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
-        // Storing transpositions
-        tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt);
+            // Storing transpositions
+            tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, ply, bound, best_move_tt);
+        }
     }
 
     return best_score;
