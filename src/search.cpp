@@ -360,7 +360,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // move ordering is good enough most of the time to order
         // best moves at the start
         if (!is_noisy_move && depth >= late_move_reduction_depth.current)
-            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100)) + move_count / (3 + 3 * depth * depth);
+            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100)) + (depth + 2 * move_count) / 16;
 
         // Static Exchange Evaluation Pruning
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
