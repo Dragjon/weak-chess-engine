@@ -234,7 +234,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     int32_t static_eval = evaluate(board);
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
-    // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
+    bool improving = !node_is_check && !is_root && static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
     // Reverse futility pruning / Static Null Move Pruning
     // If eval is well above beta, we assume that it will hold
@@ -263,7 +263,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Search has no parents :(
         SearchInfo info{};                                                                   
         info.parent_parent_move_piece = parent_move_piece;
-        info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
+        info.parent_parent_move_square = parent_move_square;        
+        info.parent_parent_eval = info.parent_static_eval;
+        info.parent_static_eval = static_eval;                                              // Child of a cut node is a all-node and vice versa
         int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
         board.unmakeNullMove();
 
@@ -336,6 +338,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
         SearchInfo info{};
+        info.parent_parent_eval = info.parent_static_eval;
+        info.parent_static_eval = static_eval;
         bool do_singular_search =  !is_root &&  depth >= 6 &&  current_move.move() == entry.best_move &&  entry.depth >= depth - 3 && (entry.type == NodeType::LOWERBOUND) && search_info.excluded == 0;
 
         if (do_singular_search)
@@ -360,7 +364,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // move ordering is good enough most of the time to order
         // best moves at the start
         if (!is_noisy_move && depth >= late_move_reduction_depth.current)
-            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100)) + (int32_t)!improving;
 
         // Static Exchange Evaluation Pruning
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
