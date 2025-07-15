@@ -227,7 +227,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Transposition Table cutoffs
     // Only cut with a greater or equal depth search
-    if (!pv_node && entry.depth >= depth && !is_root && tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)))
+    if (!pv_node && entry.depth >= depth && !is_root && tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && search_info.excluded == 0)
         return entry.score;
 
     // Static evaluation for pruning metrics
@@ -240,7 +240,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta)
+    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0)
         return static_eval;
 
     // Razoring / Alpha pruning
@@ -248,7 +248,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // with depth is still not able to raise alpha, we can be almost sure 
     // that it will not be able to in the next few depths
     // https://github.com/official-stockfish/Stockfish/blob/ce73441f2013e0b8fd3eb7a0c9fd391d52adde70/src/search.cpp#L833
-    if (!pv_node && !node_is_check && depth <= razoring_max_depth.current && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha)
+    if (!pv_node && !node_is_check && depth <= razoring_max_depth.current && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha  && search_info.excluded == 0)
         return q_search(board, alpha, beta, ply + 1);
 
     // Null move pruning. Basically, we can assume that making a move 
@@ -256,7 +256,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // except if it's in a zugzwang. Hence, if we skip out turn and
     // we still maintain beta, then we can prune early. Also do not
     // do NMP when tt suggests that it should fail immediately
-    if (!pv_node && !node_is_check && static_eval >= beta && depth >= null_move_depth.current && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK))){
+    if (!pv_node && !node_is_check && static_eval >= beta && depth >= null_move_depth.current && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) && search_info.excluded == 0){
         board.makeNullMove();
         int32_t reduction = 3 + depth / 3;
                                                                                         
@@ -274,7 +274,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
     // that are high enough up in the search tree that we would expect to have found
     // a Transposition. (Comment from Ethereal)
-    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)))
+    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)) && search_info.excluded == 0)
         depth--;
 
     // Main move loop
@@ -304,10 +304,14 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t reduction = 0;
         int32_t extension = 0;
         int64_t nodes_b4 = total_nodes;
-        
-        move_count++;
 
         Move current_move = all_moves[idx];
+
+        // Skip excluded singular moves
+        if (current_move.move() == search_info.excluded)
+            continue;
+
+        move_count++;
 
         bool is_noisy_move = board.isCapture(current_move);
 
@@ -327,6 +331,26 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             if (depth <= 4 && !node_is_check && move_history < depth * depth * -2048) {
                 break;
             }
+        }
+
+        // Singular extensions
+        // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
+        SearchInfo info{};
+        bool do_singular_search =  !is_root &&  depth >= 6 &&  current_move.move() == entry.best_move &&  entry.depth >= depth - 3 && (entry.type == NodeType::LOWERBOUND) && search_info.excluded == 0;
+
+        if (do_singular_search)
+        {
+            int32_t value = max(-POSITIVE_MATE_SCORE, entry.score - depth);
+            int32_t singular_beta = value;
+            int32_t singular_depth = (depth - 1) / 2;
+
+            info.excluded = entry.best_move;
+            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, info); 
+
+            info.excluded = 0;
+
+            if (score < singular_beta)
+                extension = 1;
         }
 
         // Quiet late moves reduction - we have to trust that our
@@ -357,7 +381,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         quiets_searched[quiets_searched_idx++] = current_move;
 
         // To update continuation history
-        SearchInfo info{};
         info.parent_parent_move_piece = parent_move_piece;
         info.parent_parent_move_square = parent_move_square;
         info.parent_move_piece = move_piece;
@@ -458,11 +481,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
     }
 
-    NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
-    uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
+    if (move_count == 0 && search_info.excluded != 0){
+        return alpha;
+    }
 
-    // Storing transpositions
-    tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt);
+    // Don't store TT in singular searches
+    if (search_info.excluded == 0){
+        NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
+        uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
+
+        // Storing transpositions
+        tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt);
+    }
 
     return best_score;
 
