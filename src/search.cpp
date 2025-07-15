@@ -349,11 +349,16 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             info.excluded = 0;
 
-            if (score < singular_beta)
+            // Double extensions
+            if (!pv_node &&  value < singular_beta - 16)
+                extension = 2;
+
+            else if (score < singular_beta)
                 extension = 1;
 
             else if (singular_beta >= beta)
                 return singular_beta;
+
         }
 
         // Static Exchange Evaluation Pruning
