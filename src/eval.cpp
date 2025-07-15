@@ -384,8 +384,8 @@ int32_t evaluate(const chess::Board& board) {
     }
 
     // Bishop Pair
-    if (wb.count() == 2) eval_array[0] += bishop_pair;
-    if (bb.count() == 2) eval_array[1] += bishop_pair;
+    if (wb.count() == 2) { eval_array[0] += bishop_pair; }
+    if (bb.count() == 2) { eval_array[1] += bishop_pair; }
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
     int32_t score = eval_array[stm] - eval_array[stm^1];
