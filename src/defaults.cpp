@@ -25,7 +25,6 @@ SearchParam razoring_max_depth("RazoringMaxDepth", 3, 1, 5, 1);
 SearchParam razoring_base("RazoringBase", 500, -384, 768, 64);
 SearchParam razoring_linear_mul("RazoringLinearMul", 0, -64, 384, 32);
 SearchParam razoring_quad_mul("RazoringQuadMul", 300, 1, 1536, 64);
-SearchParam tempo("Tempo", 5, 0, 20, 3);
 SearchParam soft_tm_ratio("SoftTMRatio", 30, 5, 50, 8);
 SearchParam hard_tm_ratio("HardTMRatio", 10, 1, 20, 4);
 SearchParam node_tm_base("NodeTMBase", 150, 50, 300, 20);
