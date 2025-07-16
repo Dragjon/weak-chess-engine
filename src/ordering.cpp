@@ -16,7 +16,9 @@
 using namespace chess;
 
 constexpr int32_t TT_BONUS = 1000000;
-constexpr int32_t KILLER_BONUS = 90000;
+constexpr int32_t KILLER_1_BONUS = 90000;
+constexpr int32_t KILLER_2_BONUS = 80000;
+
 
 // Main search sorting
 void sort_moves(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move, int32_t ply, SearchInfo search_info) {
@@ -41,8 +43,10 @@ void sort_moves(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move,
         } else if (board.isCapture(move)) {
             score = mvv_lva(board, move);
             score += see(board, move, 0) ? 0 : -10000000;
-        } else if (killers[0][ply] == move || killers[1][ply] == move) {
-            score = KILLER_BONUS;
+        } else if (killers[0][ply] == move) {
+            score = KILLER_1_BONUS;
+        } else if (killers[1][ply] == move) {
+            score = KILLER_2_BONUS;
         } else {
             score = quiet_history[board.sideToMove() == Color::WHITE][move.from().index()][move.to().index()];
 
