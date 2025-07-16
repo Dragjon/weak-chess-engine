@@ -38,7 +38,7 @@ int32_t lmr_reductions[2][256][256]{};
 void init_reductions() {
     for (int depth = 1; depth < 256; ++depth){
         for (int moves = 1; moves < 256; ++moves){
-            lmr_reductions[1][depth][moves] = 0.3 + 0.3 * log(depth) * log(moves); // capture
+            lmr_reductions[1][depth][moves] = 0.1 + 0.3 * log(depth) * log(moves); // capture
             lmr_reductions[0][depth][moves] = 0.75 + 0.4 * log(depth) * log(moves); // quiet
         }
     }
