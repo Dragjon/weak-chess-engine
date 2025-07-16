@@ -310,6 +310,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         Move current_move = all_moves[idx];
 
+        bool turn = board.sideToMove() == chess::Color::WHITE;
+        int32_t to = current_move.to().index();
+        int32_t from = current_move.from().index();
+        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+
         // Skip excluded singular moves
         if (current_move.move() == search_info.excluded)
             continue;
@@ -318,7 +323,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         bool is_noisy_move = board.isCapture(current_move);
 
-        int32_t move_history = !is_noisy_move ? quiet_history[board.sideToMove() == chess::Color::WHITE][current_move.from().index()][current_move.to().index()] : 0;
+        int32_t move_history = !is_noisy_move ? quiet_history[board.sideToMove() == chess::Color::WHITE][from][to] : 0;
 
         // Quiet Move Prunings
         if (!is_root && !is_noisy_move && best_score > -POSITIVE_WIN_SCORE) {
@@ -334,6 +339,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             if (depth <= 4 && !node_is_check && move_history < depth * depth * -2048) {
                 break;
             }
+            // Countermove pruning - Moves with poor countermove history are pruned near the leaf nodes of the search
+            if (parent_move_piece != -1 && parent_move_square != -1 && depth <= 3 && one_ply_conthist[parent_move_piece][parent_move_square][from][to] < -1000){
+                continue;
+            }
+
         }
 
         // Singular extensions
@@ -371,10 +381,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
 
         int32_t score = 0;
-        bool turn = board.sideToMove() == chess::Color::WHITE;
-        int32_t to = current_move.to().index();
-        int32_t from = current_move.from().index();
-        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
