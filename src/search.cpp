@@ -31,6 +31,16 @@ int64_t total_nodes = 0;
 // Highest searched depth
 int32_t seldpeth = 0;
 
+// LMR reduction table yoinked from weiss
+int32_t lmr_reductions[2][256][256]{};
+
+// Initializes the late move reduction array
+void init_reductions() {
+    for (int depth = 1; depth < 256; ++depth)
+        for (int moves = 1; moves < 256; ++moves)
+            lmr_reductions[1][depth][moves] = 0.38 + log(depth) * log(moves) / 3.76, // quiet
+            lmr_reductions[0][depth][moves] = 2.01 + log(depth) * log(moves) / 2.32; // capture
+}
 
 // Quiescence search. When we are in a noisy position (there are captures), we try to "quiet" the position by
 // going down capture trees using negamax and return the eval when we re in a quiet position
@@ -367,8 +377,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
-        if (!is_noisy_move && depth >= late_move_reduction_depth.current)
-            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+        if (depth >= late_move_reduction_depth.current)
+            reduction += lmr_reductions[is_noisy_move][min(255, depth)][min(255, move_count)];
 
         int32_t score = 0;
         bool turn = board.sideToMove() == chess::Color::WHITE;

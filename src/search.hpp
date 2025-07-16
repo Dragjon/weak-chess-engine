@@ -45,3 +45,6 @@ int32_t alpha_beta(chess::Board &board, int32_t depth, int32_t alpha, int32_t be
 
 // Root of the search function basically
 int32_t search_root(chess::Board &board);
+
+// lmr table init reductions
+void init_reductions();

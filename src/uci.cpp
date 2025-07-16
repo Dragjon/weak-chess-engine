@@ -156,6 +156,9 @@ void print_board(const Board &board){
 // Main UCI loop
 int32_t main(int32_t argc, char* argv[]) {
 
+    // Init lmr table
+    init_reductions();
+
     if (argc > 1) {
         string command = argv[1];
         if (command == "bench") {
