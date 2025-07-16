@@ -186,6 +186,10 @@ int32_t main(int32_t argc, char* argv[]) {
         // or parameters eg. Hash & Threads which are the most basic
         // ones. After which we must respond with "uciok"
         if (words[0] == "uci"){
+            tt.clear();
+            reset_continuation_history();
+            reset_quiet_history();
+            reset_killers();
             cout << "id name " << ENGINE_NAME << "-" << ENGINE_VERSION << "\n";
             cout << "id author " << ENGINE_AUTHOR << "\n";
             if (IS_TUNING) print_all_uci_options();
@@ -207,6 +211,8 @@ int32_t main(int32_t argc, char* argv[]) {
         else if (words[0] == "ucinewgame"){
             tt.clear();
             reset_continuation_history();
+            reset_quiet_history();
+            reset_killers();
         }
 
         // Parse the position command. The position commands comes in a number
@@ -275,7 +281,6 @@ int32_t main(int32_t argc, char* argv[]) {
 
             // Reset all histories when "go" is given except continuation history.
             reset_killers();
-            reset_quiet_history();
 
             if (words.size() > 1){
                 if (words[1] == "infinite"){
