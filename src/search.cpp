@@ -27,6 +27,7 @@ int64_t total_nodes_per_search = 0;
 
 int32_t global_depth = 0;
 int64_t total_nodes = 0;
+int32_t root_score = 0;
 
 // Highest searched depth
 int32_t seldpeth = 0;
@@ -538,15 +539,16 @@ void print_tt_pv(Board &board, int32_t depth){
 
 // Iterative deepening time management loop
 // Uses soft bound time management
-int32_t search_root(Board &board){
+int32_t search_root(Board &board_root){
     try {
+        Board board = board_root;
         // Aspiration window search, we predict that the score from previous searches will be
         // around the same as the next depth +/- some margin.
         int32_t score = 0;
         int32_t delta = aspiration_window_delta.current;
         int32_t alpha = DEFAULT_ALPHA;
         int32_t beta = DEFAULT_BETA;
-        while ((global_depth == 0 || !soft_bound_time_exceeded()) && global_depth < MAX_SEARCH_DEPTH){
+        while ((global_depth == 0 || !soft_bound_time_exceeded(board_root)) && global_depth < MAX_SEARCH_DEPTH){
             // Increment the global depth since global_depth starts from 0
             global_depth++;
             int32_t researches = 0;
@@ -602,13 +604,14 @@ int32_t search_root(Board &board){
                 }
 
                 // If we exceed our time management, we stop widening 
-                if (soft_bound_time_exceeded())
+                if (soft_bound_time_exceeded(board_root))
                     break;
                     
                 else delta += delta * aspiration_widening_factor.current / 100;
             }
 
             score = new_score;
+            root_score = score;
             
         }
     }
