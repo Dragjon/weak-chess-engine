@@ -110,12 +110,11 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         // QSEE pruning, if a move is obviously losing, don't search it
         if (!see_bools[idx]) continue;
 
-        // Basic make and undo functionality. Copy-make should be faster but that
-        // debugging is for later
-        board.makeMove(current_move);
+        // Used copymake for performance
+        Board new_board = board;
+        new_board.makeMove(current_move);
         moves_played++;
-        int32_t score = -q_search(board, -beta, -alpha, ply + 1);
-        board.unmakeMove(current_move);
+        int32_t score = -q_search(new_board, -beta, -alpha, ply + 1);
 
         // Updating best_score and alpha beta pruning
         if (score > best_score){
@@ -376,12 +375,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t from = current_move.from().index();
         int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
 
-        // Basic make and undo functionality. Copy-make should be faster but that
-        // debugging is for later
-        board.makeMove(current_move);
+        // Use copymake for preformance
+        Board new_board = board;
+        new_board.makeMove(current_move);
 
         // Check extension, we increase the depth of moves that give check
-        if (board.inCheck())
+        if (new_board.inCheck())
             extension++;
 
         quiets_searched[quiets_searched_idx++] = current_move;
@@ -395,22 +394,20 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Principle Variation Search
         if (move_count == 1)
                                                                                       // This is not a cut-node this is a PV node
-            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+            score = -alpha_beta(new_board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
         else {
-            score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, info);
+            score = -alpha_beta(new_board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, info);
 
             // Triple PVS
             if (reduction > 0 && score > alpha)                                                
-                score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+                score = -alpha_beta(new_board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, info);
 
             // Research
             if (score > alpha && score < beta) {
                                                                                         // This is not a cut-node this is a PV node
-                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+                score = -alpha_beta(new_board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
             }
         }
-
-        board.unmakeMove(current_move);
 
         // Updating best_score and alpha beta pruning
         // I did not actually test this in sprt 
