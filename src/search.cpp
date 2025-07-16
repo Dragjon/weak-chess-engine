@@ -32,13 +32,14 @@ int64_t total_nodes = 0;
 int32_t seldpeth = 0;
 
 // LMR reduction table yoinked from weiss
-int32_t lmr_reductions[64][64]{};
+int32_t lmr_reductions[2][256][256]{};
 
 // Initializes the late move reduction array
 void init_reductions() {
-    for (int depth = 1; depth < 64; ++depth){
-        for (int moves = 1; moves < 64; ++moves){
-            lmr_reductions[depth][moves] = 0.5 + log(depth) * log(moves) / 3.0; 
+    for (int depth = 1; depth < 256; ++depth){
+        for (int moves = 1; moves < 256; ++moves){
+            lmr_reductions[1][depth][moves] = 0.3 + 0.3 * log(depth) * log(moves); // capture
+            lmr_reductions[0][depth][moves] = 0.75 + 0.4 * log(depth) * log(moves); // quiet
         }
     }
 }
@@ -375,11 +376,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
             continue;
 
-        // Quiet late moves reduction - we have to trust that our
+        // Late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
-        if (!is_noisy_move && depth >= late_move_reduction_depth.current)
-            reduction += lmr_reductions[min(63, depth)][min(63, move_count)];
+        if (depth >= late_move_reduction_depth.current)
+            reduction += lmr_reductions[is_noisy_move][min(255, depth)][min(255, move_count)];
 
         int32_t score = 0;
         bool turn = board.sideToMove() == chess::Color::WHITE;
