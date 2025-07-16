@@ -243,16 +243,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0)
+    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0){
         return static_eval;
+    }
 
     // Razoring / Alpha pruning
     // For low depths, if the eval is so bad that a large margin scaled
     // with depth is still not able to raise alpha, we can be almost sure 
     // that it will not be able to in the next few depths
     // https://github.com/official-stockfish/Stockfish/blob/ce73441f2013e0b8fd3eb7a0c9fd391d52adde70/src/search.cpp#L833
-    if (!pv_node && !node_is_check && depth <= razoring_max_depth.current && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha  && search_info.excluded == 0)
+    if (!pv_node && !node_is_check && depth <= razoring_max_depth.current && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha  && search_info.excluded == 0){
         return q_search(board, alpha, beta, ply + 1);
+    }
 
     // Null move pruning. Basically, we can assume that making a move 
     // is always better than not making our move most of the time
@@ -277,8 +279,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
     // that are high enough up in the search tree that we would expect to have found
     // a Transposition. (Comment from Ethereal)
-    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)) && search_info.excluded == 0)
+    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)) && search_info.excluded == 0){
         depth--;
+    }
 
     // Main move loop
     // For loop is faster than foreach :)
@@ -352,11 +355,17 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             info.excluded = 0;
 
-            if (score < singular_beta)
+            if (score < singular_beta){
                 extension = 1;
+            }
 
-            else if (singular_beta >= beta)
+            else if (singular_beta >= beta){
                 return singular_beta;
+            }
+
+            else if (entry.score >= beta){
+                extension = -2 + (int32_t)pv_node;
+            }
         }
 
         // Static Exchange Evaluation Pruning
@@ -381,7 +390,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         board.makeMove(current_move);
 
         // Check extension, we increase the depth of moves that give check
-        if (board.inCheck())
+        if (!do_singular_search && board.inCheck())
             extension++;
 
         quiets_searched[quiets_searched_idx++] = current_move;
