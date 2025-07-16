@@ -121,16 +121,16 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         if (score > best_score){
             best_score = score;
             current_best_move = current_move;
-        }
 
-        // Update alpha
-        if (score > alpha){
-            alpha = score;
-        }
+            // Update alpha
+            if (score > alpha){
+                alpha = score;
+            }
 
-        // Alpha-Beta Pruning
-        if (score >= beta){
-            break;
+            // Alpha-Beta Pruning
+            if (score >= beta){
+                break;
+            }
         }
     }
 
@@ -203,8 +203,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // When we are in checkmate during our turn, we lost the game, therefore we 
     // should return a large negative value
     if (!is_root && all_moves.size() == 0){
-        if (node_is_check)
+        if (node_is_check){
             return -POSITIVE_MATE_SCORE + ply;
+        }
 
         // Stalemate jumpscare!
         else {
@@ -213,12 +214,14 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     }
 
     // Max ply cutoff to avoid ubs with our arrays
-    if (ply >= MAX_SEARCH_PLY)
+    if (ply >= MAX_SEARCH_PLY){
         return evaluate(board);
+    }
 
     // Depth <= 0 (because we allow depth to drop below 0) - we end our search and return eval (haven't started qs yet)
-    if (depth <= 0)
+    if (depth <= 0){
         return q_search(board, alpha, beta, ply);
+    }
 
     // Get the TT Entry for current position
     TTEntry entry{};
