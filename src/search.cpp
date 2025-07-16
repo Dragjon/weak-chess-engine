@@ -375,6 +375,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t to = current_move.to().index();
         int32_t from = current_move.from().index();
         int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+        int32_t to_piece = static_cast<int32_t>(board.at(current_move.to()).internal());
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
@@ -483,6 +484,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                                 two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  -= 300 * depth * depth + 280 * depth + 50;
                             }
                         }
+                    }
+
+                    // Capture moves that failed high
+                    else {
+                        // Capture history
+                        int32_t capthist_bonus = clamp(500 * depth * depth + 200 * depth + 150, -MAX_HISTORY, MAX_HISTORY);
+                        capture_hist[move_piece][to][to_piece] += capthist_bonus - capture_hist[move_piece][to][to_piece] * abs(capthist_bonus) / MAX_HISTORY;
                     }
 
                     break;

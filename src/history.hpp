@@ -19,3 +19,7 @@ void reset_quiet_history();
 extern int32_t one_ply_conthist[12][64][12][64];
 extern int32_t two_ply_conthist[12][64][12][64];
 void reset_continuation_history();
+
+// Capture history [piece][to][captured piece]
+extern int32_t capture_hist[12][64][12];
+void reset_capture_history();

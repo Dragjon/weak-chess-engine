@@ -5,11 +5,20 @@
 
 using namespace chess;
 
-// Histories
+/////////////////////
+///// Histories /////
+////////////////////
+
+// color-ply
 Move killers[2][MAX_SEARCH_PLY+1]{};
+// color-from-to
 int32_t quiet_history[2][64][64]{};
+// parent-parentsq-current-currentsq
 int32_t one_ply_conthist[12][64][12][64]{};
+// parentparent, parentparentsq, current, currentsq
 int32_t two_ply_conthist[12][64][12][64]{};
+// piece-to-captured
+int32_t capture_hist[12][64][12]{};
 
 // Reset killer moves
 void reset_killers(){
@@ -19,7 +28,7 @@ void reset_killers(){
 }
 
 
-// Reset quiet histiry
+// Reset quiet history
 void reset_quiet_history() {
     for (int32_t color = 0; color < 2; ++color) {
         for (int32_t piece = 0; piece < 64; ++piece) {
@@ -29,6 +38,19 @@ void reset_quiet_history() {
         }
     }
 }
+
+
+// Reset capture history
+void reset_capture_history() {
+    for (int32_t piece = 0; piece < 12; ++piece) {
+        for (int32_t to = 0; to < 64; ++to) {
+            for (int32_t captured = 0; captured < 12; ++captured) {
+                capture_hist[piece][to][captured] = 0;
+            }
+        }
+    }
+}
+
 
 // Reset continuation history
 void reset_continuation_history() {

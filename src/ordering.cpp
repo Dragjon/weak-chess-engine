@@ -35,22 +35,27 @@ void sort_moves(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move,
     for (size_t i = 0; i < move_count; i++) {
         const auto& move = movelist[i];
         int32_t score = 0;
+        int32_t to = move.to().index();
+        int32_t from = move.from().index();
+        int32_t move_piece = static_cast<int32_t>(board.at(move.from()).internal());
+        int32_t to_piece = static_cast<int32_t>(board.at(move.to()).internal());
 
         if (tt_hit && move.move() == tt_move) {
             score = TT_BONUS;
         } else if (board.isCapture(move)) {
             score = mvv_lva(board, move);
             score += see(board, move, 0) ? 0 : -10000000;
+            score += capture_hist[move_piece][to][to_piece];
         } else if (killers[0][ply] == move || killers[1][ply] == move) {
             score = KILLER_BONUS;
         } else {
-            score = quiet_history[board.sideToMove() == Color::WHITE][move.from().index()][move.to().index()];
+            score = quiet_history[board.sideToMove() == Color::WHITE][from][to];
 
             if (parent_move_piece != -1 && parent_move_square != -1)
-                score += one_ply_conthist[parent_move_piece][parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
+                score += one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to];
 
             if (parent_parent_move_piece != -1 && parent_parent_move_square != -1)
-                score += two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
+                score += two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to];
         }
 
         scored_moves.emplace_back(score, move);
