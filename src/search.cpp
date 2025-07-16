@@ -336,7 +336,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
         SearchInfo info{};
-        bool do_singular_search =  !is_root &&  depth >= 6 &&  current_move.move() == entry.best_move &&  entry.depth >= depth - 3 && (entry.type == NodeType::LOWERBOUND) && search_info.excluded == 0;
+        bool do_singular_search =  !is_root &&  depth >= 5 &&  current_move.move() == entry.best_move &&  entry.depth >= depth - 3 && (entry.type == NodeType::LOWERBOUND) && search_info.excluded == 0;
 
         if (do_singular_search)
         {
