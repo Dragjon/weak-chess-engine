@@ -274,6 +274,56 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             return null_score;
     }
 
+
+    // Move orderings
+    // 1st TT Move
+    // 2nd MVV-LVA (captures)
+    // 3rd Killers Moves (quiets)
+    // 4th Histories (quiets)
+    //      - 1 ply conthist (countermoves)
+    //      - 2 ply conthist (follow-up moves)
+    sort_moves(board, all_moves, tt_hit, entry.best_move, ply, search_info);
+
+    // Probcut pruning - If we have a good capture that causes a
+    // cutoff with an adjusted beta value at a reduced search depth, we expect that
+    // it will cause a similar cutoff at this search depth, with a normal beta value
+    int32_t probcut_beta = beta + 100;
+    int32_t value = 0;
+    if (   !pv_node
+        && !node_is_check
+        && search_info.excluded == 0
+        &&  depth >= 5
+        &&  abs(beta) < POSITIVE_WIN_SCORE
+        && (!tt_hit || entry.score >= probcut_beta || entry.depth < depth - 3)) {
+
+        for (int32_t idx = 0; idx < all_moves.size(); idx++){
+
+            Move current_move = all_moves[idx];
+
+            board.makeMove(current_move);
+
+            SearchInfo new_info{};
+
+            // For high depths, verify the move first with a qsearch
+            if (depth >= 10)
+                value = -q_search(board, -probcut_beta, -probcut_beta + 1, ply+1);
+
+            // For low depths, or after the above, verify with a reduced search
+            if (depth < 10 || value >= probcut_beta)
+                value = -alpha_beta(board, depth - 4, -probcut_beta, -probcut_beta+1, ply + 1, !cut_node, new_info);
+
+            board.unmakeMove(current_move);
+
+            // Store an entry if we don't have a better one already
+            if (value >= probcut_beta && (!tt_hit || entry.depth < depth - 3))
+                tt.store(zobrists_key, clamp(value, -40000, 40000), depth-3, NodeType::LOWERBOUND, current_move.move());
+
+            // Probcut failed high verifying the cutoff
+            if (value >= probcut_beta) return value;
+            
+        }
+    }
+
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
     // that are high enough up in the search tree that we would expect to have found
     // a Transposition. (Comment from Ethereal)
@@ -292,15 +342,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Clear killers of next ply
     killers[0][ply+1] = Move{}; 
     killers[1][ply+1] = Move{}; 
-
-    // Move orderings
-    // 1st TT Move
-    // 2nd MVV-LVA (captures)
-    // 3rd Killers Moves (quiets)
-    // 4th Histories (quiets)
-    //      - 1 ply conthist (countermoves)
-    //      - 2 ply conthist (follow-up moves)
-    sort_moves(board, all_moves, tt_hit, entry.best_move, ply, search_info);
 
     for (int idx = 0; idx < all_moves.size(); idx++){
 
