@@ -25,6 +25,10 @@ struct SearchAbort : public std::exception {
 
 // The global best move variable
 extern chess::Move root_best_move;
+extern chess::Move previous_best_move;
+
+// BM-Stability time management (https://github.com/ProgramciDusunur/Potential/commit/d1e5a2d7f03c8616abc1a2ca7779145195da3c74)
+extern int32_t bm_stability;
 
 // The global depth variable
 extern int32_t global_depth;
