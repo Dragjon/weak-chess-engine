@@ -21,8 +21,10 @@ using namespace std;
 
 // Storing the final best move for every complete search
 chess::Move root_best_move{};
+chess::Move previous_best_move{};
 
 int64_t best_move_nodes = 0;
+int32_t bm_stability = 0;
 int64_t total_nodes_per_search = 0;
 
 int32_t global_depth = 0;
@@ -547,6 +549,9 @@ int32_t search_root(Board &board){
         int32_t alpha = DEFAULT_ALPHA;
         int32_t beta = DEFAULT_BETA;
         while ((global_depth == 0 || !soft_bound_time_exceeded()) && global_depth < MAX_SEARCH_DEPTH){
+
+            previous_best_move = root_best_move;
+
             // Increment the global depth since global_depth starts from 0
             global_depth++;
             int32_t researches = 0;
