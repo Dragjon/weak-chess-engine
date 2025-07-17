@@ -560,7 +560,9 @@ int32_t search_root(Board &board){
         while ((global_depth == 0 || !soft_bound_time_exceeded()) && global_depth < MAX_SEARCH_DEPTH){
 
             previous_best_move = root_best_move;
-            avg_prev_score = (avg_prev_score * (global_depth - 1) + root_best_score) / (global_depth);
+            if (global_depth > 1){
+                avg_prev_score = (avg_prev_score * (global_depth - 1) + root_best_score) / global_depth;
+            }
 
             // Increment the global depth since global_depth starts from 0
             global_depth++;
