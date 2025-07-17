@@ -378,8 +378,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
-        if (!is_noisy_move && depth >= late_move_reduction_depth.current)
+        if (!is_noisy_move && depth >= late_move_reduction_depth.current){
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+            reduction += move_history < -1024 * depth;
+        }
 
         int32_t score = 0;
         bool turn = board.sideToMove() == chess::Color::WHITE;
