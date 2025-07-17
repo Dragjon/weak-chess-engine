@@ -19,21 +19,12 @@
 using namespace chess;
 using namespace std;
 
-// Summoning multithread demons with global vars!!
 // Storing the final best move for every complete search
 chess::Move root_best_move{};
 chess::Move previous_best_move{};
 
 int64_t best_move_nodes = 0;
-
-// BM-stability
 int32_t bm_stability = 0;
-
-// Score stability
-int32_t score_stability = 0;
-int32_t avg_prev_score = 0;
-int32_t root_best_score = 0;
-
 int64_t total_nodes_per_search = 0;
 
 int32_t global_depth = 0;
@@ -560,7 +551,6 @@ int32_t search_root(Board &board){
         while ((global_depth == 0 || !soft_bound_time_exceeded()) && global_depth < MAX_SEARCH_DEPTH){
 
             previous_best_move = root_best_move;
-            avg_prev_score = (avg_prev_score * (global_depth - 1) + root_best_score) / (global_depth);
 
             // Increment the global depth since global_depth starts from 0
             global_depth++;
@@ -624,7 +614,6 @@ int32_t search_root(Board &board){
             }
 
             score = new_score;
-            root_best_score = score;
             
         }
     }

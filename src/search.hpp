@@ -30,11 +30,6 @@ extern chess::Move previous_best_move;
 // BM-Stability time management (https://github.com/ProgramciDusunur/Potential/commit/d1e5a2d7f03c8616abc1a2ca7779145195da3c74)
 extern int32_t bm_stability;
 
-// Eval stability time management (https://github.com/ProgramciDusunur/Potential/pull/220/commits/ea410b0666d38ae05b8c66d67bc45358f35a17b8)
-extern int32_t score_stability;
-extern int32_t root_best_score;
-extern int32_t avg_prev_score;
-
 // The global depth variable
 extern int32_t global_depth;
 
