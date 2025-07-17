@@ -37,7 +37,8 @@ inline double get_bm_scale() {
 
 // Inspired by Potential's eval stability, but with actual average instead of (prev_avg + new_score) / 2
 inline double get_score_scale() {
-    return 1.2 - 0.05 * (double)score_stability;
+    double score_scale[5] = {1.25, 1.15, 1.00, 0.94, 0.88};
+    return score_scale[score_stability];
 }
 
 
@@ -59,10 +60,10 @@ inline bool soft_bound_time_exceeded() {
     }
 
 
-    // Score stability
+    // Score stability also yoinked from Potential (https://github.com/ProgramciDusunur/Potential/pull/220/commits/ea410b0666d38ae05b8c66d67bc45358f35a17b8)
     double score_scale = 1.0;
     if (root_best_score > avg_prev_score - 10 && root_best_score < avg_prev_score + 10){
-        score_stability = std::min(score_stability + 1, 8);
+        score_stability = std::min(score_stability + 1, 4);
     }
     else {
         score_stability = 0;
@@ -70,11 +71,8 @@ inline bool soft_bound_time_exceeded() {
 
     if (global_depth >= 7) {
         bm_scale = get_bm_scale();
-    }
-    
-    if (global_depth >= 8){
         score_scale = get_score_scale();
     }
-
+    
     return elapsed.count() >= (int64_t)((double)max_soft_time_ms * scale * bm_scale * score_scale);
 }
