@@ -31,8 +31,13 @@ inline double frac_best_move_nodes(){
 
 // Totally yoinked from Potential
 inline double get_bm_scale() {
-    double bestMoveScale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
-    return bestMoveScale[bm_stability];
+    double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
+    return best_move_scale[bm_stability];
+}
+
+// Inspired by Potential's eval stability, but with actual average instead of (prev_avg + new_score) / 2
+inline double get_score_scale() {
+    return 1.2 - 0.05 * (double)score_stability;
 }
 
 
@@ -53,9 +58,23 @@ inline bool soft_bound_time_exceeded() {
         bm_stability = 0;
     }
 
-    if (global_depth > 6) {
-        bm_scale = get_bm_scale();
+
+    // Score stability
+    double score_scale = 1.0;
+    if (root_best_score > avg_prev_score - 10 && root_best_score < avg_prev_score + 10){
+        score_stability = std::min(score_stability + 1, 8);
+    }
+    else {
+        score_stability = 0;
     }
 
-    return elapsed.count() >= (int64_t)((double)max_soft_time_ms * scale * bm_scale);
+    if (global_depth >= 7) {
+        bm_scale = get_bm_scale();
+    }
+    
+    if (global_depth >= 8){
+        score_scale = get_score_scale();
+    }
+
+    return elapsed.count() >= (int64_t)((double)max_soft_time_ms * scale * bm_scale * score_scale);
 }
