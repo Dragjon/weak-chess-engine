@@ -79,8 +79,8 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // Eval pruning - If a static evaluation of the board will
     // exceed beta, then we can stop the search here. Also, if the static
     // eval exceeds alpha, we can set alpha to our new eval (comment from Ethereal)
-    int32_t eval = evaluate(board);
-    int32_t best_score = eval;
+    int32_t static_eval = evaluate(board);
+    int32_t best_score = static_eval;
     if (best_score >= beta) return best_score;
     if (best_score > alpha) alpha = best_score;
 
@@ -92,8 +92,8 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // is still not enough to cover the distance between alpha and eval, playing a move
     // is futile. Minor boost for pawn captures idea from Ethereal: 
     // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L872
-    if (eval + max(142, move_best_case_value(board)) < alpha)
-        return eval;
+    if (static_eval + max(142, move_best_case_value(board)) < alpha)
+        return static_eval;
 
     // Get all legal moves for our moveloop in our search
     Movelist capture_moves{};
@@ -105,21 +105,33 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         see_bools = sort_captures(board, capture_moves, tt_hit, entry.best_move);
     }
 
-    // Qsearch pruning stuff
+    // Qsearch movecount pruning
+    bool in_check = !board.inCheck();
     int32_t moves_played = 0;
+
+    // Qsearch futility pruning
+    int32_t futility_margin = static_eval + 135;
 
     Move current_best_move{};
     
     for (int idx = 0; idx < capture_moves.size(); idx++){
 
         // QSearch movecount pruning
-        if (!board.inCheck() && moves_played >= 2)
+        if (!in_check && moves_played >= 2)
             break;
 
         Move current_move = capture_moves[idx];
 
         // QSEE pruning, if a move is obviously losing, don't search it
         if (!see_bools[idx]) continue;
+
+        // Futility pruning (ref https://github.com/kelseyde/hobbes-chess-engine/blob/f7b04768c7d0ef13fbae3dfb7e99c2f75c75e5d3/src/search.rs#L516)
+        if (!in_check && futility_margin <= alpha && !see(board, current_move, 1)){
+            if (best_score < futility_margin) {
+                best_score = futility_margin;
+            }
+            continue;
+        }
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
@@ -143,6 +155,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
                 break;
             }
         }
+
     }
 
     NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : best_score > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
