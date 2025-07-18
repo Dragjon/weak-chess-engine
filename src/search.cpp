@@ -269,7 +269,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // is always better than not making our move most of the time
     // except if it's in a zugzwang. Hence, if we skip out turn and
     // we still maintain beta, then we can prune early. Also do not
-    // do NMP when tt suggests that it should fail immediately
+    // do NMP when tt suggests that it should fail immediately.
+    // We also allow double null move pruning. 
     if (!pv_node && !node_is_check && static_eval >= beta && depth >= null_move_depth.current && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) && search_info.excluded == 0){
         board.makeNullMove();
         int32_t reduction = 3 + depth / 3;
@@ -278,11 +279,23 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         SearchInfo info{};                                                                   
         info.parent_parent_move_piece = parent_move_piece;
         info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
-        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
+        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply, !cut_node, info);
         board.unmakeNullMove();
 
-        if (null_score >= beta)
-            return null_score;
+        if (null_score >= beta){
+            // We should not return unproven mates in nmp but can still return beta
+            // We also should not be doing verifcation search in a low depth
+            if (search_info.nmp_min_ply > 0 || depth <= 14)
+                return abs(null_score) > POSITIVE_MATE_SCORE ? beta : null_score;
+
+            // Verification search with normal bounds at high depth
+            info.nmp_min_ply = (3 * (depth - reduction) / 4) + ply;
+            int32_t verification_score = alpha_beta(board, depth - reduction, beta-1, beta, ply, true, info);
+            
+            // We've proven our null move result and can safely prune 
+            if (verification_score >= beta)
+                return null_score;
+        }
     }
 
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
