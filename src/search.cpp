@@ -363,8 +363,15 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             info.excluded = 0;
 
-            if (score < singular_beta)
+            if (score < singular_beta){
                 extension = 1;
+
+                // Double Extensions
+                if (!pv_node && score <= singular_beta - 20) {
+                    extension++;
+                }
+
+            }
 
             else if (singular_beta >= beta)
                 return singular_beta;
@@ -394,7 +401,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         board.makeMove(current_move);
 
         // Check extension, we increase the depth of moves that give check
-        if (board.inCheck())
+        // Do not increase more if we already have a positive extension
+        if (extension == 0 && board.inCheck())
             extension++;
 
         quiets_searched[quiets_searched_idx++] = current_move;
