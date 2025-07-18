@@ -116,10 +116,10 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         if (!board.inCheck() && moves_played >= 2)
             break;
 
-        Move current_move = capture_moves[idx];
-
         // QSEE pruning, if a move is obviously losing, don't search it
-        if (!see_bools[idx]) continue;
+        if (best_score > -POSITIVE_WIN_SCORE && !see_bools[idx]) continue;
+
+        Move current_move = capture_moves[idx];
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
