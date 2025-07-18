@@ -255,7 +255,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
     if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0)
-        return static_eval;
+        // Fail-Mid RFP - apparently its supposed to be a better "guess" of positional advantage
+        return beta + (static_eval - beta) / 3;
 
     // Razoring / Alpha pruning
     // For low depths, if the eval is so bad that a large margin scaled
