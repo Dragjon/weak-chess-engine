@@ -366,6 +366,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             if (score < singular_beta)
                 extension = 1;
 
+            // Multi-cut
             else if (singular_beta >= beta)
                 return singular_beta;
         }
@@ -379,8 +380,14 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // move ordering is good enough most of the time to order
         // best moves at the start
         if (!is_noisy_move && depth >= late_move_reduction_depth.current){
+            // log-log formula for lmr
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+
+            // history reductions
             reduction += move_history < -1024 * depth;
+
+            // futility reductions
+            reduction += (static_eval + 30) + 100 * depth <= alpha;
         }
 
         int32_t score = 0;
@@ -504,6 +511,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
     }
 
+    // If we excluded the only move in singular search
     if (move_count == 0 && search_info.excluded != 0){
         return alpha;
     }
