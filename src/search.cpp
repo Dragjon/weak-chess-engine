@@ -149,7 +149,9 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
     // Storing transpositions
-    tt.store(zobrists_key, clamp(best_score, -40000, 40000), 0, bound, best_move_tt);
+    // TT-replacement scheme (always replace if score is EXACT or if position is new)
+    if (bound == NodeType::EXACT || zobrists_key != entry.key)
+        tt.store(zobrists_key, clamp(best_score, -40000, 40000), 0, bound, best_move_tt);
 
     return best_score;
 }
@@ -514,7 +516,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
         // Storing transpositions
-        tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt);
+        // TT-replacement scheme (always replace if score is EXACT or if position is new or if our search depth is greater)
+        // In Potential: https://github.com/ProgramciDusunur/Potential/compare/40ab11ad..81f56528
+        if (bound == NodeType::EXACT || zobrists_key != entry.key || depth > entry.depth)
+            tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt);
     }
 
     return best_score;
