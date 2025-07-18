@@ -98,28 +98,36 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // Get all legal moves for our moveloop in our search
     Movelist capture_moves{};
     movegen::legalmoves<movegen::MoveGenType::CAPTURE>(capture_moves, board);
-
     vector<bool> see_bools{};
     // Move ordering
     if (capture_moves.size() != 0) { 
         see_bools = sort_captures(board, capture_moves, tt_hit, entry.best_move);
     }
 
-    // Qsearch pruning stuff
+    // Qsearch movecount pruning
     int32_t moves_played = 0;
+    // Qsearch futility pruning (reference https://github.com/mcthouacbb/Sirius/blob/77356f986dd62be7b4d736f70932b44d5a2194e0/Sirius/src/search.cpp#L936)
+    int32_t futility = eval + 70;
 
     Move current_best_move{};
+    bool in_check = board.inCheck();
+
     
     for (int idx = 0; idx < capture_moves.size(); idx++){
 
         // QSearch movecount pruning
-        if (!board.inCheck() && moves_played >= 2)
+        if (!in_check && moves_played >= 2)
             break;
+
+        // QSEE pruning, if a move is obviously losing, don't search it
+        if (!see_bools[idx])
+            continue;
 
         Move current_move = capture_moves[idx];
 
-        // QSEE pruning, if a move is obviously losing, don't search it
-        if (!see_bools[idx]) continue;
+        // QSearch futility pruning
+        if (!in_check && futility <= alpha && !see(board, current_move, 1))
+            continue;
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
