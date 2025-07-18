@@ -387,7 +387,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             reduction += move_history < -1024 * depth;
 
             // futility reductions
-            reduction += (static_eval + 70) + 100 * depth <= alpha;
+            reduction += (static_eval + 100) + 100 * depth <= alpha;
         }
 
         int32_t score = 0;
