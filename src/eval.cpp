@@ -38,7 +38,7 @@ using namespace std;
 // Bishop pair evaluation
 // Bishop pair eval is a pretty good eval heuristic for HCE engines and is
 // pretty intuitive to implement.
-
+ 
 // 4.
 // Passed pawn bonus
 // Passed pawns are given a bonus indexed by which square they are on. Passed
