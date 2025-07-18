@@ -315,6 +315,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     for (int idx = 0; idx < all_moves.size(); idx++){
 
+        // Quit search early if move is clearly best at root
+        if (is_root && move_count >= 4 && best_score >= 300 * depth)
+            break;
+
         int32_t reduction = 0;
         int32_t extension = 0;
         int64_t nodes_b4 = total_nodes;
