@@ -381,7 +381,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (!is_noisy_move && depth >= late_move_reduction_depth.current){
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
             // Reduce less for good moves, and more for bad moves
-            reduction -= move_history / (1024 * depth);
+            reduction -= move_history / (8192 * depth);
         }
 
         int32_t score = 0;
