@@ -13,6 +13,14 @@ int32_t lsb(uint64_t bb) {
     return __builtin_ctzll(bb);
 }
 
+// Helper: Pop LSB and return its index
+int32_t pop_lsb(uint64_t &bb) {
+    assert(bb != 0);
+    int32_t index = __builtin_ctzll(bb);
+    bb &= bb - 1; // Clear the LSB
+    return index;
+}
+
 // Passed pawn masks
 const uint64_t WHITE_PASSED_MASK[64] = {
     217020518514230016ull,    506381209866536704ull,
@@ -329,6 +337,11 @@ const uint64_t LEFT_RIGHT_COLUMN_MASK[64] = {
     11574427654092267680ull,    4629771061636907072ull
 };
 
+const uint64_t PAWN_RANDOMS[2][64] = {
+    { 0x54702f45f273524c, 0x890b2f5fc450f9b1, 0x671b8d04f596ce28, 0x41be9ff947627443, 0xe6ef5a9a0193df41, 0x2cf6e392b6e8c5c7, 0xdd2ea5e3db0c5828, 0xca3ab7247f648164, 0xe38343fd157ef605, 0x04107d3c92865d74, 0x6c9f90fc226e9d09, 0xfadca4a24c3653a2, 0x4b1860703b96b193, 0x23f0e626de08973f, 0xd5d52af41b1da6f8, 0x29d6d6947b932290, 0x022ac9a6805870ee, 0xfe3bb03d4ec5c0f2, 0xafce1c4812b75b16, 0xf2d65558b223fb40, 0x0a09de26bdb519f3, 0xbe698bbb5c63b2e0, 0x913b511bec38d1da, 0x9a6ae3108e3e14c5, 0x53965ebf88c0a587, 0xc50a77a99833ff64, 0x985527c4d22c6a09, 0x5dbd0cd70d35c823, 0xbaec8044e147955f, 0xf5eb7800ea8325f2, 0x2a0a09275dbfbec0, 0x8f171abce1148d4e, 0xa3f543d596b8f685, 0x1f2e7ad5dd5995e2, 0x0f83f3ad8e045108, 0x74a58828658caa84, 0xf9dfafef613d881c, 0x603c57a38a0d6bf4, 0x97d567757a8130f6, 0x0d3413193a8adf4b, 0x0efa72250f1a5a79, 0xb76fe649746fc8b1, 0xe0c8146a878ca549, 0xe0ebe3dcd7d7a827, 0x8627dcacf289b3b3, 0xd928d585ea63d3eb, 0x9d07adb6ffaa4bb1, 0xff53069b49b9dbda, 0xfa84421168bcee11, 0xbcb8beae98ad8094, 0xaf03d1cb7ae015fe, 0xe0177e16f7e86f7e, 0x9481c7d1f66bcf4f, 0x23e30d70356e4925, 0xa6e13f54e74a3729, 0x064703057a924d1e, 0x6d5a3c55fe85c1a9, 0x3269474a97845f6c, 0x07ac631a5f5dbe7f, 0x07485810952a12fc, 0x5e783942ebe7c613, 0xb87b07562129fbee, 0xb1299621897aeb05, 0x6b5def2b36e04870 },
+    { 0x8b304f0ac702565a, 0x60da8b0149c0d94d, 0xc1f64b6fe3202f51, 0x1c6b5409d3bcf5ac, 0x51045671e4355e1a, 0x3cef26086cf0ae1e, 0x80857ef15d4bc649, 0x2e4b3069e7095cd9, 0x0fd41ed22cdeb812, 0x2fb11490035becf6, 0x3d924a27081f4bab, 0x78c1ac5979508660, 0x7d7477dd708e5c32, 0x2059c3c4c1433a3a, 0x63789c923a933227, 0xa3c7e325222d4753, 0x30dcf92442cb3d4b, 0x270fd94f8f66319d, 0x4215b5f1d72ec45a, 0xd781efaef69a2927, 0xcabd50383ddd3a38, 0x2be4dd17ffa47f9a, 0xc60b3904a477284b, 0x8d886cc5b2ebe45a, 0x83117d42f9e72d1b, 0x7307f4da6de6b837, 0x63731eaf26e13268, 0x4a3a84750150920a, 0x771db813109e5a07, 0x21b5b3877a4254e6, 0xdf55ea05362471f1, 0xa0773e46125318f0, 0x755830a55797d945, 0xebb9b5cb9133bc4b, 0x53f292b95552c2d6, 0xcc13ae33837f4841, 0x3333cd9aa64598af, 0x702314b54c16440b, 0x52d6b1723b659497, 0xf62ee484a5e6b844, 0xc634fe15000f7b3a, 0x39db5baa1242a378, 0xc3edeb13991d6ee6, 0x6e1957671c56da0c, 0x1c533c15aa4dabd1, 0x1de36df403fea991, 0x2aedfa9ff198bf08, 0xffda5fae664eded9, 0x90c6679c34712e36, 0x6466340f3c4962da, 0xadda25b80601afa2, 0xd510c435559f555a, 0x488fd0b5c9c0de48, 0x33530ef32a7b2734, 0x8b99e8d6500f074e, 0xde65031a9457899b, 0xda00ca63f42e4fcd, 0x33cc4fddf6b47e52, 0x7f5a94793115ba54, 0x1111791cdd897112, 0x14e840b92bb95812, 0xce8589f7d537c827, 0xff5b9d19b4e54339, 0xe3ee0bb466747a01 }
+};
+
 // Check if square is passed pawn for white
 bool is_white_passed_pawn(int32_t square, uint64_t black_pawns) {
     return (WHITE_PASSED_MASK[square] & black_pawns) == 0;
@@ -337,4 +350,20 @@ bool is_white_passed_pawn(int32_t square, uint64_t black_pawns) {
 // Check if square is passed pawn for black
 bool is_black_passed_pawn(int32_t square, uint64_t white_pawns) {
     return (BLACK_PASSED_MASK[square] & white_pawns) == 0;
+}
+
+// Get the pawn key for the current position
+uint64_t get_pawn_key(const Board &board){
+    uint64_t pawn_key = 0ull;
+    uint64_t wp = board.pieces(PieceType::PAWN, Color::WHITE).getBits();
+    uint64_t bp = board.pieces(PieceType::PAWN, Color::BLACK).getBits();
+    while (wp){
+        int32_t sq = pop_lsb(wp);
+        pawn_key ^= PAWN_RANDOMS[0][sq];
+    }
+    while (bp){
+        int32_t sq = pop_lsb(bp);
+        pawn_key ^= PAWN_RANDOMS[1][sq];
+    }
+    return pawn_key;
 }

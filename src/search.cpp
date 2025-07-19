@@ -80,6 +80,10 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // exceed beta, then we can stop the search here. Also, if the static
     // eval exceeds alpha, we can set alpha to our new eval (comment from Ethereal)
     int32_t eval = evaluate(board);
+
+    // Correct static evaluation with our correction histories
+    eval = corrhist_adjust_eval(board, eval);
+
     int32_t best_score = eval;
     if (best_score >= beta) return best_score;
     if (best_score > alpha) alpha = best_score;
@@ -246,6 +250,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Static evaluation for pruning metrics
     int32_t static_eval = evaluate(board);
+
+    // Correct static evaluation with our correction histories
+    static_eval = corrhist_adjust_eval(board, static_eval);
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
@@ -512,6 +519,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (search_info.excluded == 0){
         NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
         uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
+
+        // Update correction histories
+        if (!node_is_check && !board.isCapture(current_best_move) && !(bound == NodeType::LOWERBOUND && best_score <= static_eval) && !(bound == NodeType::UPPERBOUND && best_score >= static_eval)) {
+            int32_t corrhist_bonus = clamp(best_score - static_eval, -1024, 1024);
+            update_pawn_correction_history(board, depth, corrhist_bonus);
+        }
 
         // Storing transpositions
         tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt);

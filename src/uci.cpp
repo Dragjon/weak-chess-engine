@@ -207,6 +207,7 @@ int32_t main(int32_t argc, char* argv[]) {
         else if (words[0] == "ucinewgame"){
             tt.clear();
             reset_continuation_history();
+            reset_correction_history();
         }
 
         // Parse the position command. The position commands comes in a number
