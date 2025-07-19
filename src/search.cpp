@@ -160,17 +160,13 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 // ply. This works because a position which is a win for white is a loss for black and vice versa. Most "strong" chess engines use
 // negamax instead of minimax because it makes the code much tidier. Not sure about how much is gains though. The "fail soft" basically
 // means we return max_value instead of alpha. This gives us more information to do puning etc etc.
-int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int32_t ply, bool cut_node, SearchInfo search_info){
+int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int32_t ply, bool cut_node, bool pv_node, SearchInfo search_info){
 
     // Search variables
     // max_score for fail-soft negamax
     int32_t best_score = -POSITIVE_INFINITY;
     bool is_root = ply == 0;
     bool node_is_check = board.inCheck();
-
-    // Important for cutoffs
-    // I'm aware this is not the best way to do it but that's for later
-    bool pv_node = beta - alpha > 1;
 
     int32_t parent_move_piece = search_info.parent_move_piece;
     int32_t parent_move_square = search_info.parent_move_square;
@@ -278,7 +274,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         SearchInfo info{};                                                                   
         info.parent_parent_move_piece = parent_move_piece;
         info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
-        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
+        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, false, info);
         board.unmakeNullMove();
 
         if (null_score >= beta)
@@ -359,7 +355,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             int32_t singular_depth = (depth - 1) / 2;
 
             info.excluded = entry.best_move;
-            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, info); 
+            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, pv_node, info); 
 
             info.excluded = 0;
 
@@ -407,19 +403,17 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Principle Variation Search
         if (move_count == 1)
-                                                                                      // This is not a cut-node this is a PV node
-            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, true, info);
         else {
-            score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, info);
+            score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, false, info);
 
             // Triple PVS
             if (reduction > 0 && score > alpha)                                                
-                score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+                score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, false, info);
 
             // Research
             if (score > alpha && score < beta) {
-                                                                                        // This is not a cut-node this is a PV node
-                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, true, info);
             }
         }
 
@@ -577,7 +571,7 @@ int32_t search_root(Board &board){
 
                 total_nodes_per_search = 0ll;
                 SearchInfo info{};
-                new_score = alpha_beta(board, global_depth, alpha, beta, 0, false, info);
+                new_score = alpha_beta(board, global_depth, alpha, beta, 0, false, true, info);
                 int64_t elapsed_time = elapsed_ms();
 
                 // Upperbound
