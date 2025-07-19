@@ -71,7 +71,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
     // Transposition Table cutoffs
     if (tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)))
-        return entry.score >= beta ? (entry.score * 3 + beta) / 4 : entry.score;
+        return entry.score >= beta ? (entry.score + beta) / 2 : entry.score;
         
     // For TT updating later to determine bound
     int32_t old_alpha = alpha;
@@ -242,7 +242,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Transposition Table cutoffs
     // Only cut with a greater or equal depth search
     if (!pv_node && entry.depth >= depth && !is_root && tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && search_info.excluded == 0)
-        return entry.score >= beta ? (entry.score * 3 + beta) / 4 : entry.score;
+        return entry.score >= beta ? (entry.score + beta) / 2 : entry.score;
 
     // Static evaluation for pruning metrics
     int32_t static_eval = evaluate(board);
