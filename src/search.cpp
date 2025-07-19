@@ -393,10 +393,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // debugging is for later
         board.makeMove(current_move);
 
-        // Check extension, we increase the depth of moves that give check
-        if (board.inCheck())
-            extension++;
-
         if (!is_noisy_move) quiets_searched[quiets_searched_idx++] = current_move;
 
         // To update continuation history
