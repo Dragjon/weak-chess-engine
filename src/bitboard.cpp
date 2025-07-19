@@ -359,11 +359,11 @@ uint64_t get_pawn_key(const Board &board){
     uint64_t bp = board.pieces(PieceType::PAWN, Color::BLACK).getBits();
     while (wp){
         int32_t sq = pop_lsb(wp);
-        pawn_key ^= PAWN_RANDOMS[board.sideToMove() == Color::WHITE ? 0 : 1][sq];
+        pawn_key ^= PAWN_RANDOMS[0][sq];
     }
     while (bp){
         int32_t sq = pop_lsb(bp);
-        pawn_key ^= PAWN_RANDOMS[board.sideToMove() == Color::WHITE ? 0 : 1][sq];
+        pawn_key ^= PAWN_RANDOMS[1][sq];
     }
     return pawn_key;
 }
