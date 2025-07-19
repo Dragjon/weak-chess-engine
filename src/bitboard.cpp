@@ -355,9 +355,14 @@ bool is_black_passed_pawn(int32_t square, uint64_t white_pawns) {
 // Get the pawn key for the current position
 uint64_t get_pawn_key(const Board &board){
     uint64_t pawn_key = 0ull;
-    uint64_t pawns = board.pieces(PieceType::PAWN).getBits();
-    while (pawns){
-        int32_t sq = pop_lsb(pawns);
+    uint64_t wp = board.pieces(PieceType::PAWN, Color::WHITE).getBits();
+    uint64_t bp = board.pieces(PieceType::PAWN, Color::BLACK).getBits();
+    while (wp){
+        int32_t sq = pop_lsb(wp);
+        pawn_key ^= PAWN_RANDOMS[board.sideToMove() == Color::WHITE ? 0 : 1][sq];
+    }
+    while (bp){
+        int32_t sq = pop_lsb(bp);
         pawn_key ^= PAWN_RANDOMS[board.sideToMove() == Color::WHITE ? 0 : 1][sq];
     }
     return pawn_key;
