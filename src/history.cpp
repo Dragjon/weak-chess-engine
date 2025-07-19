@@ -78,7 +78,7 @@ void update_correction_history(const Board &board, int32_t depth, int32_t diff) 
     non_pawn_correction_history[stm][non_pawn_key_idx] = (non_pawn_correction_history[stm][non_pawn_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
 
     pawn_correction_history[stm][pawn_key_idx] = clamp(pawn_correction_history[stm][pawn_key_idx], -16384, 16384);
-    non_pawn_correction_history[stm][non_pawn_key_idx] = clamp(pawn_correction_history[stm][non_pawn_key_idx], -16384, 16384);
+    non_pawn_correction_history[stm][non_pawn_key_idx] = clamp(non_pawn_correction_history[stm][non_pawn_key_idx], -16384, 16384);
 
 }
 
