@@ -68,6 +68,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     TTEntry entry{};
     uint64_t zobrists_key = board.hash(); 
     bool tt_hit = tt.probe(zobrists_key, entry);
+    bool node_is_check = board.inCheck();
 
     // Transposition Table cutoffs
     if (tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)))
@@ -79,8 +80,14 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // Eval pruning - If a static evaluation of the board will
     // exceed beta, then we can stop the search here. Also, if the static
     // eval exceeds alpha, we can set alpha to our new eval (comment from Ethereal)
-    int32_t eval = evaluate(board);
-    int32_t best_score = eval;
+    int32_t static_eval = evaluate(board);
+
+    // But before that we use tt to correct our eval
+    if (tt_hit && !node_is_check && ((entry.type == NodeType::EXACT) ||(entry.type == NodeType::LOWERBOUND && entry.score >= static_eval) || (entry.type == NodeType::UPPERBOUND && entry.score <= static_eval))) {
+        static_eval = entry.score;
+    }
+
+    int32_t best_score = static_eval;
     if (best_score >= beta) return best_score;
     if (best_score > alpha) alpha = best_score;
 
@@ -92,8 +99,8 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // is still not enough to cover the distance between alpha and eval, playing a move
     // is futile. Minor boost for pawn captures idea from Ethereal: 
     // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L872
-    if (eval + max(142, move_best_case_value(board)) < alpha)
-        return eval;
+    if (static_eval + max(142, move_best_case_value(board)) < alpha)
+        return static_eval;
 
     // Get all legal moves for our moveloop in our search
     Movelist capture_moves{};
@@ -113,7 +120,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     for (int idx = 0; idx < capture_moves.size(); idx++){
 
         // QSearch movecount pruning
-        if (!board.inCheck() && moves_played >= 2)
+        if (node_is_check && moves_played >= 2)
             break;
 
         Move current_move = capture_moves[idx];
@@ -239,13 +246,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     uint64_t zobrists_key = board.hash(); 
     bool tt_hit = tt.probe(zobrists_key, entry);
 
-    // Transposition Table cutoffs
+    // Transposition table cutoffs
     // Only cut with a greater or equal depth search
-    if (!pv_node && entry.depth >= depth && !is_root && tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && search_info.excluded == 0)
+    if (!pv_node && entry.depth >= depth && !is_root && tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && (search_info.excluded == 0))
         return entry.score;
 
     // Static evaluation for pruning metrics
     int32_t static_eval = evaluate(board);
+
+    // Transposition-table-adjusted eval for more accurate eval
+    if (tt_hit && !node_is_check && ((entry.type == NodeType::EXACT) ||(entry.type == NodeType::LOWERBOUND && entry.score >= static_eval) || (entry.type == NodeType::UPPERBOUND && entry.score <= static_eval)) && (search_info.excluded == 0)) {
+        static_eval = entry.score;
+    }
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
