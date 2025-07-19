@@ -105,15 +105,16 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         see_bools = sort_captures(board, capture_moves, tt_hit, entry.best_move);
     }
 
-    // Qsearch pruning stuff
+    // Qsearch movecount pruning
     int32_t moves_played = 0;
+    bool in_check = board.inCheck();
 
     Move current_best_move{};
     
     for (int idx = 0; idx < capture_moves.size(); idx++){
 
         // QSearch movecount pruning
-        if (!board.inCheck() && moves_played >= 2)
+        if (!in_check && moves_played >= 2)
             break;
 
         Move current_move = capture_moves[idx];
@@ -363,8 +364,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             info.excluded = 0;
 
-            if (score < singular_beta)
-                extension = 1;
+            if (score < singular_beta){
+                if (!pv_node && score <= singular_beta - 20) {
+                    extension = 2;
+                } else {
+                    extension = 1;
+                }
+            }
 
             else if (singular_beta >= beta)
                 return singular_beta;
