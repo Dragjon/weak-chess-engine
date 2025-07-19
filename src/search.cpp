@@ -172,6 +172,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // I'm aware this is not the best way to do it but that's for later
     bool pv_node = beta - alpha > 1;
 
+    // Continuation history variables
     int32_t parent_move_piece = search_info.parent_move_piece;
     int32_t parent_move_square = search_info.parent_move_square;
     int32_t parent_parent_move_piece = search_info.parent_parent_move_piece;
@@ -248,13 +249,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     int32_t static_eval = evaluate(board);
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
-    // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
+    bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
     // Reverse futility pruning / Static Null Move Pruning
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0)
+    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - (improving ? 25 : 78) * depth >= beta && search_info.excluded == 0)
         return (static_eval + beta) / 2;
 
     // Razoring / Alpha pruning
@@ -393,10 +394,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // debugging is for later
         board.makeMove(current_move);
 
-        // Check extension, we increase the depth of moves that give check
-        if (board.inCheck())
-            extension++;
-
         if (!is_noisy_move) quiets_searched[quiets_searched_idx++] = current_move;
 
         // To update continuation history
@@ -404,6 +401,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         info.parent_parent_move_square = parent_move_square;
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
+        info.parent_parent_eval = info.parent_static_eval;
+        info.parent_static_eval = static_eval; 
 
         // Principle Variation Search
         if (move_count == 1)
