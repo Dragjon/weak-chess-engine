@@ -288,7 +288,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
     // that are high enough up in the search tree that we would expect to have found
     // a Transposition. (Comment from Ethereal)
-    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)) && search_info.excluded == 0)
+    if (!node_is_check && depth >= internal_iterative_reduction_depth.current && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)) && search_info.excluded == 0)
         depth--;
 
     // Main move loop
