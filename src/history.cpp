@@ -65,8 +65,8 @@ void update_pawn_correction_history(const Board &board, int32_t depth, int32_t d
     uint64_t pawn_key = get_pawn_hash(board);
     int32_t entry = pawn_correction_history[board.sideToMove() == Color::WHITE ? 0 : 1][pawn_key % 16384];
     int32_t scaled_diff = diff * 256;
-    int32_t newWeight = min(depth + 1, 16);
-    entry = (entry * (256 - newWeight) + scaled_diff * newWeight) / 256;
+    int32_t new_weight = min(depth + 1, 16);
+    entry = (entry * (256 - new_weight) + scaled_diff * new_weight) / 256;
     entry = clamp(entry, -16384, 16384);
 }
 
