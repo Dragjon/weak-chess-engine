@@ -60,16 +60,19 @@ void reset_correction_history() {
 }
 
 // Updates the pawn correction history given the difference between static eval and score
-// Reference: https://github.com/ProgramciDusunur/Potential/pull/221/commits/ea7701117ca87c9fffaf05330ee7029093150520
+// Also implements the gravity formula for scaling
+// References: https://github.com/ProgramciDusunur/Potential/pull/221/commits/ea7701117ca87c9fffaf05330ee7029093150520
+//             https://github.com/Bobingstern/Tarnished/blob/master/src/search.h#L271
 void update_pawn_correction_history(const Board &board, int32_t depth, int32_t diff) {
     uint64_t pawn_key = get_pawn_key(board);
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
     int32_t key_idx = pawn_key % 16384;
     int32_t entry = pawn_correction_history[stm][key_idx];
-    int32_t scaled_diff = diff * 256;
-    int32_t new_weight = min(depth + 1, 16);
-    pawn_correction_history[stm][key_idx] = (entry * (256 - new_weight) + scaled_diff * new_weight) / 256;
-    pawn_correction_history[stm][key_idx] = clamp(pawn_correction_history[stm][key_idx], -16384, 16384);
+
+    int32_t bonus = diff * depth / 8;
+
+    int16_t clamped = clamp(bonus, -4096, 4096);
+    pawn_correction_history[stm][key_idx] += clamped - entry * abs(clamped) / 16384;
 }
 
 // Function to use correction history to adjust static eval
