@@ -62,7 +62,7 @@ void reset_correction_history() {
 // Updates the pawn correction history given the difference between static eval and score
 // Reference: https://github.com/ProgramciDusunur/Potential/pull/221/commits/ea7701117ca87c9fffaf05330ee7029093150520
 void update_pawn_correction_history(const Board &board, int32_t depth, int32_t diff) {
-    uint64_t pawn_key = get_pawn_hash(board);
+    uint64_t pawn_key = get_pawn_key(board);
     int32_t entry = pawn_correction_history[board.sideToMove() == Color::WHITE ? 0 : 1][pawn_key % 16384];
     int32_t scaled_diff = diff * 256;
     int32_t new_weight = min(depth + 1, 16);
@@ -72,7 +72,7 @@ void update_pawn_correction_history(const Board &board, int32_t depth, int32_t d
 
 // Function to use correction history to adjust static eval
 int32_t corrhist_adjust_eval(const Board &board, int32_t raw_eval) {
-    uint64_t pawn_key = get_pawn_hash(board);
+    uint64_t pawn_key = get_pawn_key(board);
     int32_t entry = pawn_correction_history[board.sideToMove() == Color::WHITE ? 0 : 1][pawn_key % 16384];
     return clamp(raw_eval + entry / 256, -40000, 40000);
 }
