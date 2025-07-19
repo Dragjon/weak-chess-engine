@@ -81,7 +81,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // eval exceeds alpha, we can set alpha to our new eval (comment from Ethereal)
     int32_t eval = evaluate(board);
     int32_t best_score = eval;
-    if (best_score >= beta) return best_score;
+    if (best_score >= beta) return (best_score + beta) / 2;
     if (best_score > alpha) alpha = best_score;
 
     // Max ply cutoff
