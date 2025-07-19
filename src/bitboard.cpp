@@ -338,3 +338,8 @@ bool is_white_passed_pawn(int32_t square, uint64_t black_pawns) {
 bool is_black_passed_pawn(int32_t square, uint64_t white_pawns) {
     return (BLACK_PASSED_MASK[square] & white_pawns) == 0;
 }
+
+// Get pawn bitboard hash
+uint64_t get_pawn_hash(const Board &board){
+    return (board.pieces(chess::PieceType::PAWN, chess::Color::WHITE) | board.pieces(chess::PieceType::PAWN, chess::Color::BLACK)).getBits();
+}
