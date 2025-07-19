@@ -255,7 +255,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - (improving ? 25 : 78) * depth >= beta && search_info.excluded == 0)
+    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - (improving ? 65 : 82) * depth >= beta && search_info.excluded == 0)
         return (static_eval + beta) / 2;
 
     // Razoring / Alpha pruning
