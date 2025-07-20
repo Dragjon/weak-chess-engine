@@ -242,7 +242,9 @@ const int32_t rook_semi_open[2] = {
 
 
 // For a tapered evaluation
-const int32_t game_phase_increment[6] = {0, 1, 1, 2, 4, 0};
+const int32_t game_phase_increment[6] = {
+  0, 1, 1, 2, 4, 0
+};
 
 // This is our HCE evaluation function. 
 int32_t evaluate(const chess::Board& board) {
