@@ -76,7 +76,9 @@ void update_correction_history(const Board &board, int32_t depth, int32_t diff) 
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
     int32_t scaled_diff = diff * 256;
-    int32_t new_weight = min(depth + 1, 16);
+
+    // *2 idea from Perseus engine
+    int32_t new_weight = 2 * min(depth + 1, 16);
 
     pawn_correction_history[stm][pawn_key_idx] = (pawn_correction_history[stm][pawn_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
     non_pawn_correction_history[stm][non_pawn_key_idx] = (non_pawn_correction_history[stm][non_pawn_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
