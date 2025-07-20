@@ -27,4 +27,4 @@ extern int32_t pawn_correction_history[2][16384];
 void reset_correction_history();
 int32_t corrhist_adjust_eval(const chess::Board &board, int32_t raw_eval);
 
-void update_pawn_correction_history(const chess::Board &board, int32_t depth, int32_t diff);
+void update_correction_history(const chess::Board &board, int32_t depth, int32_t diff);

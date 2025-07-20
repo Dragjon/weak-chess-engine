@@ -523,7 +523,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Update correction histories
         if (!node_is_check && !board.isCapture(current_best_move) && !(bound == NodeType::LOWERBOUND && best_score <= static_eval) && !(bound == NodeType::UPPERBOUND && best_score >= static_eval)) {
             int32_t corrhist_bonus = clamp(best_score - static_eval, -1024, 1024);
-            update_pawn_correction_history(board, depth, corrhist_bonus);
+            update_correction_history(board, depth, corrhist_bonus);
         }
 
         // Storing transpositions
