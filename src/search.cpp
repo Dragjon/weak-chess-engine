@@ -255,13 +255,14 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     static_eval = corrhist_adjust_eval(board, static_eval);
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
-    // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
+    bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
     // Reverse futility pruning / Static Null Move Pruning
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0)
+    int32_t rfp_margin = improving ? 65 * (depth - 1) : 82 * depth;
+    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - rfp_margin >= beta && search_info.excluded == 0)
         return (static_eval + beta) / 2;
 
     // Razoring / Alpha pruning
@@ -282,9 +283,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t reduction = 3 + depth / 3;
                                                                                         
         // Search has no parents :(
-        SearchInfo info{};                                                                   
-        info.parent_parent_move_piece = parent_move_piece;
-        info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
+        SearchInfo info{};                 
         int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
         board.unmakeNullMove();
 
@@ -357,6 +356,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
         SearchInfo info{};
+
         bool do_singular_search =  !is_root &&  depth >= 6 &&  current_move.move() == entry.best_move &&  entry.depth >= depth - 3 && (entry.type == NodeType::LOWERBOUND) && search_info.excluded == 0;
 
         if (do_singular_search)
@@ -407,16 +407,19 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (!is_noisy_move) quiets_searched[quiets_searched_idx++] = current_move;
 
         // To update continuation history
+        info.parent_parent_eval = info.parent_static_eval;
+        info.parent_static_eval = static_eval;                                                  
         info.parent_parent_move_piece = parent_move_piece;
-        info.parent_parent_move_square = parent_move_square;
+        info.parent_parent_move_square = parent_move_square;   
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
 
         // Principle Variation Search
         if (move_count == 1)
-                                                                                      // This is not a cut-node this is a PV node
+            // PV node
             score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
         else {
+            // Cut node
             score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, info);
 
             // Triple PVS
@@ -424,10 +427,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, info);
 
             // Research
-            if (score > alpha && score < beta) {
-                                                                                        // This is not a cut-node this is a PV node
+            if (score > alpha && score < beta) 
+                // PV Node
                 score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
-            }
         }
 
         board.unmakeMove(current_move);
