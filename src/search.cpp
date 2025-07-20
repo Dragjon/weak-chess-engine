@@ -322,7 +322,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     for (int idx = 0; idx < all_moves.size(); idx++){
 
-        int32_t reduction = 0;
         int32_t extension = 0;
         int64_t nodes_b4 = total_nodes;
 
@@ -382,15 +381,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
             continue;
 
-        // Quiet late moves reduction - we have to trust that our
-        // move ordering is good enough most of the time to order
-        // best moves at the start
-        if (!is_noisy_move && depth >= late_move_reduction_depth.current){
-            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
-            reduction += move_history < -1024 * depth;
-        }
-
         int32_t score = 0;
+        int32_t new_depth = depth + extension - 1;
+        int32_t reduction = 0;
         bool turn = board.sideToMove() == chess::Color::WHITE;
         int32_t to = current_move.to().index();
         int32_t from = current_move.from().index();
@@ -412,24 +405,38 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
 
-        // Principle Variation Search
-        if (move_count == 1)
-                                                                                      // This is not a cut-node this is a PV node
-            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
-        else {
-            score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, info);
+        // Quiet late moves reduction - we have to trust that our
+        // move ordering is good enough most of the time to order
+        // best moves at the start
+        bool do_lmr = !is_noisy_move && depth >= late_move_reduction_depth.current && move_count >= 2;
+        
+        // Principal variation search framework (PVS) with lmr
+        if (do_lmr){
+            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+            reduction += move_history < -1024 * depth;
 
-            // Triple PVS
-            if (reduction > 0 && score > alpha)                                                
-                score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+            int32_t reduced_depth = new_depth - reduction;
 
-            // Research
-            if (score > alpha && score < beta) {
-                                                                                        // This is not a cut-node this is a PV node
-                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
-            }
+            // We perform a reduced depth null window search for lmr nonpv nodes
+            score = -alpha_beta(board, reduced_depth, -alpha - 1, -alpha, ply + 1, true, info);
+
+            // Oh no! Our score beat alpha which was unexpected. But we can try a deeper search and hopefully work
+            if (score > alpha && new_depth >= reduced_depth)
+                score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+            
         }
 
+        // If we didn't meet the lmr condition and we aren't in a pv node
+        else if (!pv_node || move_count > 1){
+            score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+        }
+
+        // Either we are the first legal move in a pv node or we have to research (because of alpha raise)
+        // This is where we do our full-window search
+        if (pv_node && (move_count == 1 || score > alpha)){
+            score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
+        }   
+        
         board.unmakeMove(current_move);
 
         // Updating best_score and alpha beta pruning
