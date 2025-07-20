@@ -18,6 +18,7 @@ int32_t two_ply_conthist[12][64][12][64]{};
 int32_t pawn_correction_history[2][16384]{};
 int32_t non_pawn_correction_history[2][16384]{};
 int32_t minor_correction_history[2][16384]{};
+int32_t major_correction_history[2][16384]{};
 
 // Reset killer moves
 void reset_killers(){
@@ -35,7 +36,7 @@ void reset_quiet_history() {
                 quiet_history[color][piece][square] = 0;
             }
         }
-    } 
+    }
 }
  
 // Reset continuation history
@@ -59,6 +60,7 @@ void reset_correction_history() {
             pawn_correction_history[color][hash_key] = 0;
             non_pawn_correction_history[color][hash_key] = 0;
             minor_correction_history[color][hash_key] = 0;
+            major_correction_history[color][hash_key] = 0;
         }
     }
 }
@@ -69,10 +71,12 @@ void update_correction_history(const Board &board, int32_t depth, int32_t diff) 
     uint64_t pawn_key = get_pawn_key(board);
     uint64_t non_pawn_key = get_non_pawn_key(board);
     uint64_t minors_key = get_minors_key(board);
+    uint64_t majors_key = get_majors_key(board);
     
     int32_t pawn_key_idx = pawn_key % 16384;
     int32_t non_pawn_key_idx = non_pawn_key % 16384;
     int32_t minors_key_idx = minors_key % 16384;
+    int32_t majors_key_idx = majors_key % 16384;
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
     int32_t scaled_diff = diff * 256;
@@ -81,12 +85,12 @@ void update_correction_history(const Board &board, int32_t depth, int32_t diff) 
     pawn_correction_history[stm][pawn_key_idx] = (pawn_correction_history[stm][pawn_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
     non_pawn_correction_history[stm][non_pawn_key_idx] = (non_pawn_correction_history[stm][non_pawn_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
     minor_correction_history[stm][minors_key_idx] = (minor_correction_history[stm][minors_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
+    major_correction_history[stm][majors_key_idx] = (major_correction_history[stm][majors_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
 
     pawn_correction_history[stm][pawn_key_idx] = clamp(pawn_correction_history[stm][pawn_key_idx], -16384, 16384);
     non_pawn_correction_history[stm][non_pawn_key_idx] = clamp(non_pawn_correction_history[stm][non_pawn_key_idx], -16384, 16384);
     minor_correction_history[stm][minors_key_idx] = clamp(minor_correction_history[stm][minors_key_idx], -16384, 16384);
-
-
+    major_correction_history[stm][majors_key_idx] = clamp(major_correction_history[stm][majors_key_idx], -16384, 16384);
 }
 
 // Function to use correction history to adjust static eval
@@ -94,13 +98,15 @@ int32_t corrhist_adjust_eval(const Board &board, int32_t raw_eval) {
     uint64_t pawn_key = get_pawn_key(board);
     uint64_t non_pawn_key = get_non_pawn_key(board);
     uint64_t minors_key = get_minors_key(board);
+    uint64_t majors_key = get_majors_key(board);
 
     int32_t pawn_key_idx = pawn_key % 16384;
     int32_t non_pawn_key_idx = non_pawn_key % 16384;
     int32_t minors_key_idx = minors_key % 16384;
+    int32_t majors_key_idx = majors_key % 16384;
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
-    int32_t entry = pawn_correction_history[stm][pawn_key_idx] + non_pawn_correction_history[stm][non_pawn_key_idx] + minor_correction_history[stm][minors_key_idx];
+    int32_t entry = pawn_correction_history[stm][pawn_key_idx] + non_pawn_correction_history[stm][non_pawn_key_idx] + minor_correction_history[stm][minors_key_idx] + major_correction_history[stm][majors_key_idx];
 
     return clamp(raw_eval + entry / 256, -40000, 40000);
 }
