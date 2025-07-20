@@ -421,7 +421,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             score = -alpha_beta(board, reduced_depth, -alpha - 1, -alpha, ply + 1, true, info);
 
             // Oh no! Our score beat alpha which was unexpected. But we can try a deeper search and hopefully work
-            if (score > alpha && new_depth >= reduced_depth)
+            if (score > alpha && reduction != 0)
                 score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, !cut_node, info);
             
         }
@@ -436,7 +436,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (pv_node && (move_count == 1 || score > alpha)){
             score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
         }   
-        
+
         board.unmakeMove(current_move);
 
         // Updating best_score and alpha beta pruning
