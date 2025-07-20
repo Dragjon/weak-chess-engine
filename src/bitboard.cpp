@@ -490,35 +490,3 @@ uint64_t get_minors_key(const Board &board){
 
     return minors_key;
 }
-
-
-// Get the majors key for the current position
-uint64_t get_majors_key(const Board &board){
-    uint64_t majors_key = 0ull;
-    uint64_t wr = board.pieces(chess::PieceType::ROOK, chess::Color::WHITE).getBits();
-    uint64_t wq = board.pieces(chess::PieceType::QUEEN, chess::Color::WHITE).getBits();
-    uint64_t br = board.pieces(chess::PieceType::ROOK, chess::Color::BLACK).getBits();
-    uint64_t bq = board.pieces(chess::PieceType::QUEEN, chess::Color::BLACK).getBits();
-
-    // Rooks
-    while (wr){
-        int32_t sq = pop_lsb(wr);
-        majors_key ^= ROOK_RANDOMS[0][sq];
-    }
-    while (br){
-        int32_t sq = pop_lsb(br);
-        majors_key ^= ROOK_RANDOMS[1][sq];
-    }
-
-    // Queens
-    while (wq){
-        int32_t sq = pop_lsb(wq);
-        majors_key ^= QUEEN_RANDOMS[0][sq];
-    }
-    while (bq){
-        int32_t sq = pop_lsb(bq);
-        majors_key ^= QUEEN_RANDOMS[1][sq];
-    }
-
-    return majors_key;
-}
