@@ -38,7 +38,7 @@ void reset_quiet_history() {
         }
     }
 }
-
+ 
 // Reset continuation history
 void reset_continuation_history() {
     for (int32_t prev = 0; prev < 12; ++prev) {
