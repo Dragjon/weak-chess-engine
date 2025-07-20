@@ -35,7 +35,7 @@ void reset_quiet_history() {
                 quiet_history[color][piece][square] = 0;
             }
         }
-    }
+    } 
 }
 
 // Reset continuation history
