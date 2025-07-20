@@ -289,7 +289,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         board.unmakeNullMove();
 
         if (null_score >= beta)
-            return null_score;
+            // Don't return unproven mates
+            return abs(null_score) > POSITIVE_WIN_SCORE ? beta : null_score;
     }
 
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
