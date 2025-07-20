@@ -14,3 +14,4 @@ bool is_white_passed_pawn(int32_t square, uint64_t black_pawns);
 bool is_black_passed_pawn(int32_t square, uint64_t white_pawns);
 uint64_t get_pawn_key(const chess::Board &board);
 uint64_t get_non_pawn_key(const chess::Board &board);
+uint64_t get_minors_key(const chess::Board &board);

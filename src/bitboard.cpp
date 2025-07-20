@@ -459,3 +459,34 @@ uint64_t get_non_pawn_key(const Board &board){
 
     return non_pawn_key;
 }
+
+// Get the minors key for the current position
+uint64_t get_minors_key(const Board &board){
+    uint64_t minors_key = 0ull;
+    uint64_t wn = board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE).getBits();
+    uint64_t wb = board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE).getBits();
+    uint64_t bn = board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK).getBits();
+    uint64_t bb = board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK).getBits();
+
+    // Knights
+    while (wn){
+        int32_t sq = pop_lsb(wn);
+        minors_key ^= KNIGHT_RANDOMS[0][sq];
+    }
+    while (bn){
+        int32_t sq = pop_lsb(bn);
+        minors_key ^= KNIGHT_RANDOMS[1][sq];
+    }
+
+    // Bishops
+    while (wb){
+        int32_t sq = pop_lsb(wb);
+        minors_key ^= BISHOP_RANDOMS[0][sq];
+    }
+    while (bb){
+        int32_t sq = pop_lsb(bb);
+        minors_key ^= BISHOP_RANDOMS[1][sq];
+    }
+
+    return minors_key;
+}
