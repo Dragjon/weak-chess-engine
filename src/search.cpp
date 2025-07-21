@@ -407,7 +407,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // best moves at the start
         if (!is_noisy_move && depth >= late_move_reduction_depth.current){
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
-            reduction += move_history < -1024 * depth;
+            reduction += clamp(move_history / -4096, 0, 2);
         }
 
         int32_t score = 0;
