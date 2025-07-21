@@ -263,7 +263,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current && static_eval - reverse_futility_margin.current * depth >= beta && search_info.excluded == 0){
+    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current 
+        && static_eval - reverse_futility_margin.current * depth >= beta 
+        && search_info.excluded == 0){
         return (static_eval + beta) / 2;
     }
 
@@ -284,7 +286,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // except if it's in a zugzwang. Hence, if we skip out turn and
     // we still maintain beta, then we can prune early. Also do not
     // do NMP when tt suggests that it should fail immediately
-    if (!pv_node && !node_is_check && static_eval >= beta && depth >= null_move_depth.current && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) && search_info.excluded == 0){
+    if (!pv_node && !node_is_check && static_eval >= beta 
+        && depth >= null_move_depth.current 
+        && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) 
+        || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) 
+        || board.hasNonPawnMaterial(Color::BLACK)) 
+        && search_info.excluded == 0){
+        
         board.makeNullMove();
         int32_t reduction = 3 + depth / 3;
                                                                                         
@@ -302,7 +310,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
     // that are high enough up in the search tree that we would expect to have found
     // a Transposition. (Comment from Ethereal)
-    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)) && search_info.excluded == 0)
+    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current 
+        && (!tt_hit || (entry.best_move == 0 && entry.depth <= depth - 5)) 
+        && search_info.excluded == 0)
         depth--;
 
     // Main move loop
@@ -363,7 +373,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
         SearchInfo info{};
-        bool do_singular_search =  !is_root &&  depth >= 6 &&  current_move.move() == entry.best_move &&  entry.depth >= depth - 3 && (entry.type == NodeType::LOWERBOUND) && search_info.excluded == 0;
+        bool do_singular_search =  !is_root &&  depth >= 6 
+                                    &&  current_move.move() == entry.best_move 
+                                    &&  entry.depth >= depth - 3 
+                                    && (entry.type == NodeType::LOWERBOUND) 
+                                    && search_info.excluded == 0;
 
         if (do_singular_search)
         {
@@ -527,7 +541,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
         // Update correction histories
-        if (!node_is_check && !board.isCapture(current_best_move) && !(bound == NodeType::LOWERBOUND && best_score <= static_eval) && !(bound == NodeType::UPPERBOUND && best_score >= static_eval)) {
+        if (!node_is_check && !board.isCapture(current_best_move) 
+            && !(bound == NodeType::LOWERBOUND && best_score <= static_eval) 
+            && !(bound == NodeType::UPPERBOUND && best_score >= static_eval)) {
+            
             int32_t corrhist_bonus = clamp(best_score - static_eval, -1024, 1024);
             update_correction_history(board, depth, corrhist_bonus);
         }
