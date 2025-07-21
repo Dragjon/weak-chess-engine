@@ -154,7 +154,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
     // Storing transpositions
-    tt.store(zobrists_key, clamp(best_score, -40000, 40000), 0, bound, best_move_tt);
+    tt.store(zobrists_key, clamp(best_score, -40000, 40000), 0, bound, best_move_tt, tt_hit ? entry.tt_was_pv : false);
 
     return best_score;
 }
@@ -241,6 +241,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     TTEntry entry{};
     uint64_t zobrists_key = board.hash(); 
     bool tt_hit = tt.probe(zobrists_key, entry);
+    bool tt_was_pv = tt_hit ? entry.tt_was_pv : pv_node;
 
     // Transposition Table cutoffs
     // Only cut with a greater or equal depth search
@@ -263,7 +264,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !node_is_check && depth <= reverse_futility_depth.current 
+    if (!pv_node && !tt_was_pv && !node_is_check && depth <= reverse_futility_depth.current 
         && static_eval - reverse_futility_margin.current * depth >= beta 
         && search_info.excluded == 0){
         return (static_eval + beta) / 2;
@@ -550,7 +551,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
 
         // Storing transpositions
-        tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt);
+        tt.store(zobrists_key, clamp(best_score, -40000, 40000), depth, bound, best_move_tt, tt_was_pv);
     }
 
     return best_score;

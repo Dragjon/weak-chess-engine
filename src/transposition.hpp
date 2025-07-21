@@ -21,6 +21,7 @@ struct TTEntry {
     int32_t depth = -1; // Depth
     NodeType type = NodeType::EXACT;
     uint16_t best_move = 0; // Encoded move
+    bool tt_was_pv = false;
 };
 
 // Transposition table class
@@ -44,12 +45,12 @@ public:
         table.resize(size);
     }
 
-    void store(uint64_t key, int32_t score, int32_t depth, NodeType type, uint16_t bestMove) {
+    void store(uint64_t key, int32_t score, int32_t depth, NodeType type, uint16_t best_move, bool tt_was_pv) {
         size_t index = key % size;
         TTEntry& entry = table[index];
 
         if (entry.key == 0 || entry.depth <= depth) {
-            entry = TTEntry{ key, score, depth, type, bestMove };
+            entry = TTEntry{ key, score, depth, type, best_move, tt_was_pv };
         }
     }
 
