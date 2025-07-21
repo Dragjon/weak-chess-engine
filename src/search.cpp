@@ -420,6 +420,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // position, determined by the difference between corrected eval
             // and raw evaluation
             reduction -= abs(raw_eval - static_eval) > 89;
+
+            // If this node used to be a pv node (ie "ttpv"), we reduce less
+            reduction -= tt_was_pv;
         }
 
         int32_t score = 0;
