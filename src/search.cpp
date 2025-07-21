@@ -251,10 +251,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         return entry.score;
 
     // Static evaluation for pruning metrics
-    int32_t static_eval = evaluate(board);
+    int32_t raw_eval = evaluate(board);
 
     // Correct static evaluation with our correction histories
-    static_eval = corrhist_adjust_eval(board, static_eval);
+    int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
@@ -406,8 +406,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // move ordering is good enough most of the time to order
         // best moves at the start
         if (!is_noisy_move && depth >= late_move_reduction_depth.current){
+            
+            // Basic lmr "loglog" formula
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+            
+            // Custom history reductions, reduce if a move's quiet 
+            // history score is very low, scaled by depth
             reduction += move_history < -1024 * depth;
+
+            // LMR corrplexity - reduce less if we are in a complex 
+            // position, determined by the difference between corrected eval
+            // and raw evaluation
+            reduction -= abs(raw_eval - static_eval) > 89;
         }
 
         int32_t score = 0;
