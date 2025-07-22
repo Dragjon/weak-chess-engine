@@ -245,10 +245,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Transposition Table cutoffs
     // Only cut with a greater or equal depth search
-    if (!pv_node && entry.depth >= depth && !is_root && tt_hit 
+    if (!pv_node && entry.depth >= depth && !is_root && tt_hit && search_info.excluded == 0
         && ((entry.type == NodeType::EXACT) 
         || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) 
-        || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && search_info.excluded == 0)
+        || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)))
         return entry.score;
 
     // Static evaluation for pruning metrics
@@ -279,7 +279,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         && depth <= razoring_max_depth.current 
         && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha  
         && search_info.excluded == 0){
-        return q_search(board, alpha, beta, ply + 1);
+        int32_t razor_q_score = q_search(board, alpha, beta, ply + 1);
+        if (razor_q_score <= alpha)
+            return razor_q_score;
     }
 
     // Null move pruning. Basically, we can assume that making a move 
