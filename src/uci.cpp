@@ -274,8 +274,8 @@ int32_t main(int32_t argc, char* argv[]) {
             max_hard_time_ms = 10000;
             max_soft_time_ms = 30000;
 
-            int32_t base_time = -1;
-            int32_t base_inc = -1;
+            int64_t base_time = -1;
+            int64_t base_inc = -1;
 
             // Reset all histories when "go" is given except continuation history.
             reset_killers();
