@@ -274,6 +274,9 @@ int32_t main(int32_t argc, char* argv[]) {
             max_hard_time_ms = 10000;
             max_soft_time_ms = 30000;
 
+            int64_t base_time = -1;
+            int64_t base_inc = -1;
+
             // Reset all histories when "go" is given except continuation history.
             reset_killers();
             reset_quiet_history();
@@ -285,19 +288,40 @@ int32_t main(int32_t argc, char* argv[]) {
                 }
                 else {
                     for (int i = 1; i + 1 < words.size(); i+=2){
+                        // Get the base time and increment
                         // If its white to move we get white's time else we get black's time
-                        if (board.sideToMove() == Color::WHITE && words[i] == "wtime"){
-                            max_hard_time_ms = std::stoll(words[i+1]) / hard_tm_ratio.current;
-                            max_soft_time_ms = std::stoll(words[i+1]) / soft_tm_ratio.current;
-                            // Immediately break up of the loop to not waste time
-                            break;
+                        if (board.sideToMove() == Color::WHITE){
+                            if (words[i] == "wtime"){
+                                base_time = std::stoll(words[i+1]);
+                            }
+                            
+                            else if (words[i] == "winc"){
+                                base_inc = std::stoll(words[i+1]);
+                            }
                         }
-                        else if (board.sideToMove() == Color::BLACK && words[i] == "btime"){
-                            max_hard_time_ms = std::stoll(words[i+1]) / hard_tm_ratio.current;
-                            max_soft_time_ms = std::stoll(words[i+1]) / soft_tm_ratio.current;
-                            // Immediately break up of the loop to not waste time
-                            break;
+                        else if (board.sideToMove() == Color::BLACK){
+                            if (words[i] == "btime"){
+                                base_time = std::stoll(words[i+1]);
+                            }
+                            
+                            else if (words[i] == "binc"){
+                                base_inc = std::stoll(words[i+1]);
+                            }                        
                         }
+
+                    }
+                    
+                    // Sets up the time management info for soft-bound tm
+                    // and hard-bound tm
+                    max_hard_time_ms = base_time / hard_tm_ratio.current;
+                    max_soft_time_ms = base_time / soft_tm_ratio.current;
+
+                    // If increments are provided (ALERT! Increments
+                    // should always be provided for engine v engine
+                    // matches)
+                    if (base_inc != -1){
+                        max_hard_time_ms += base_inc / 6;
+                        max_soft_time_ms += base_inc / 20;
                     }
                 }
             }
