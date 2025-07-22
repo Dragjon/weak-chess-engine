@@ -424,7 +424,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reverse futility reductions - similar comcept to reverse futility
             // pruning above, but we get to be more aggressive with the margins
             // here as it is a quiet move and it is merely a reduction
-            reduction += static_eval - 25 * depth >= beta;
+            reduction += static_eval - 10 * depth >= beta;
 
         }
 
