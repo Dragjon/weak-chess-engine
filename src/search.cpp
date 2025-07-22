@@ -420,6 +420,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // position, determined by the difference between corrected eval
             // and raw evaluation
             reduction -= abs(raw_eval - static_eval) > 89;
+
+            // Reverse futility reductions - similar comcept to reverse futility
+            // pruning above, but we get to be more aggressive with the margins
+            // here as it is a quiet move and it is merely a reduction
+            reduction += static_eval - 25 * depth >= beta;
+
         }
 
         int32_t score = 0;
@@ -433,6 +439,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         board.makeMove(current_move);
 
         // Check extension, we increase the depth of moves that give check
+        // This helps mitigate the horizon effect where noisy nodes are 
+        // mistakenly evaluated
         if (board.inCheck())
             extension++;
 
