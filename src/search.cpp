@@ -433,7 +433,15 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         board.makeMove(current_move);
 
         // Check extension, we increase the depth of moves that give check
+        // This helps mitigate the horizon effect where noisy nodes are 
+        // mistakenly evaluated
         if (board.inCheck())
+            extension++;
+
+        // Forced move extensions. Extend if we are forced to make a move, ie there
+        // is only one legal move in the current board position. This could help
+        // the engine better search forcing lines
+        if (all_moves.size() == 1)
             extension++;
 
         if (!is_noisy_move) 
