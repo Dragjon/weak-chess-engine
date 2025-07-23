@@ -165,7 +165,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 // ply. This works because a position which is a win for white is a loss for black and vice versa. Most "strong" chess engines use
 // negamax instead of minimax because it makes the code much tidier. Not sure about how much is gains though. The "fail soft" basically
 // means we return max_value instead of alpha. This gives us more information to do puning etc etc.
-int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int32_t ply, bool cut_node, SearchInfo search_info){
+int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int32_t ply, bool cut_node, bool is_nmp_search, SearchInfo search_info){
 
     // Search variables
     // max_score for fail-soft negamax
@@ -286,8 +286,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // is always better than not making our move most of the time
     // except if it's in a zugzwang. Hence, if we skip out turn and
     // we still maintain beta, then we can prune early. Also do not
-    // do NMP when tt suggests that it should fail immediately
-    if (!pv_node && !node_is_check && static_eval >= beta 
+    // do NMP when tt suggests that it should fail immediately. Do not
+    // do double null move pruning.
+    if (!pv_node && !node_is_check && !is_nmp_search && static_eval >= beta 
         && depth >= null_move_depth.current 
         && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) 
         || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) 
@@ -301,7 +302,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         SearchInfo info{};                                                                   
         info.parent_parent_move_piece = parent_move_piece;
         info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
-        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
+        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, true, info);
         board.unmakeNullMove();
 
         if (null_score >= beta)
@@ -388,7 +389,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             int32_t singular_depth = (depth - 1) / 2;
 
             info.excluded = entry.best_move;
-            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, info); 
+            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, is_nmp_search, info); 
 
             info.excluded = 0;
 
@@ -450,18 +451,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Principle Variation Search
         if (move_count == 1)
-            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, is_nmp_search, info);
         else {
-            score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, info);
+            score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, is_nmp_search, info);
 
             // Triple PVS
             if (reduction > 0 && score > alpha){                                          
-                score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+                score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, is_nmp_search, info);
             }
 
             // Research
             if (score > alpha && score < beta) {
-                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, is_nmp_search, info);
             }
         }
 
@@ -628,7 +629,7 @@ int32_t search_root(Board &board){
 
                 total_nodes_per_search = 0ll;
                 SearchInfo info{};
-                new_score = alpha_beta(board, global_depth, alpha, beta, 0, false, info);
+                new_score = alpha_beta(board, global_depth, alpha, beta, 0, false, false, info);
                 int64_t elapsed_time = elapsed_ms();
 
                 // Upperbound
