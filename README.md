@@ -1,2 +1,2 @@
 # weak-chess-engine
-Weak UCI chess engine called in c++.:)
+Weak UCI chess engine in c++.:)
