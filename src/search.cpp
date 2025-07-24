@@ -64,22 +64,22 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply, SearchI
     if ((board.isHalfMoveDraw() || board.isInsufficientMaterial() || board.isRepetition(1)))
         return 0;
 
+    // Whether we are in check
+    bool in_check = board.inCheck();
+
     // Get the TT Entry for current position
     TTEntry entry{};
     uint64_t zobrists_key = board.hash(); 
     bool tt_hit = tt.probe(zobrists_key, entry);
 
     // Transposition Table cutoffs
-    if (tt_hit && ((entry.type == NodeType::EXACT) 
+    if (!in_check && tt_hit && ((entry.type == NodeType::EXACT) 
     || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) 
     || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)))
         return entry.score;
         
     // For TT updating later to determine bound
     int32_t old_alpha = alpha;
-
-    // Whether we are in check
-    bool in_check = board.inCheck();
 
     // Eval pruning - If a static evaluation of the board will
     // exceed beta, then we can stop the search here. Also, if the static
@@ -183,6 +183,11 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply, SearchI
                 break;
         }
     }
+
+
+    // This node is a terminal (checkmate)
+    if (in_check && moves_played == 0)
+        return -POSITIVE_MATE_SCORE + ply;
 
     NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : best_score > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
     uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
