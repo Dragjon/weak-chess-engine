@@ -149,7 +149,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply, SearchI
         Move current_move = moves[idx];
 
         // QSEE pruning, if a move is obviously losing, don't search it
-        if (!see_bools[idx]) 
+        if (best_score > -POSITIVE_WIN_SCORE && !see_bools[idx]) 
             continue;
 
         // To update continuation history
