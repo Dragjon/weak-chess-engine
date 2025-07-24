@@ -139,10 +139,12 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         if (score > best_score){
             best_score = score;
             current_best_move = current_move;
+        }
 
-            // Update alpha
-            if (score > alpha)
-                alpha = score;
+        // Update alpha and alpha beta pruning
+        if (score > alpha){
+            alpha = score;
+            current_best_move = current_move;
 
             // Alpha-Beta Pruning
             if (score >= beta)
@@ -471,7 +473,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // I did not actually test this in sprt 
         if (score > best_score){
             best_score = score;
-            current_best_move = current_move;
 
             if (is_root){
                 root_best_move = current_move;
@@ -484,6 +485,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Update alpha
             if (score > alpha){
                 alpha = score;
+                current_best_move = current_move;
 
                 // Alpha-Beta Pruning
                 if (score >= beta){
