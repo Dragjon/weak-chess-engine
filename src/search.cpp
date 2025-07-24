@@ -45,7 +45,7 @@ int32_t seldpeth = 0;
 
 // Quiescence search. When we are in a noisy position (there are captures), we try to "quiet" the position by
 // going down capture trees using negamax and return the eval when we re in a quiet position
-int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
+int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply, SearchInfo search_info){
     // Increment node count
     total_nodes++;
     total_nodes_per_search++;
@@ -78,13 +78,17 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // For TT updating later to determine bound
     int32_t old_alpha = alpha;
 
+    // Whether we are in check
+    bool in_check = board.inCheck();
+
     // Eval pruning - If a static evaluation of the board will
     // exceed beta, then we can stop the search here. Also, if the static
     // eval exceeds alpha, we can set alpha to our new eval (comment from Ethereal)
-    int32_t eval = evaluate(board);
+    int32_t eval = in_check ? -POSITIVE_INFINITY : evaluate(board);
 
     // Correct static evaluation with our correction histories
-    eval = corrhist_adjust_eval(board, eval);
+    if (!in_check)
+        eval = corrhist_adjust_eval(board, eval);
 
     int32_t best_score = eval;
     if (best_score >= beta) return best_score;
@@ -98,17 +102,37 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // is still not enough to cover the distance between alpha and eval, playing a move
     // is futile. Minor boost for pawn captures idea from Ethereal: 
     // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L872
-    if (eval + max(142, move_best_case_value(board)) < alpha)
+    if (!in_check && eval + max(142, move_best_case_value(board)) < alpha)
         return eval;
 
     // Get all legal moves for our moveloop in our search
-    Movelist capture_moves{};
-    movegen::legalmoves<movegen::MoveGenType::CAPTURE>(capture_moves, board);
+    Movelist moves{};
 
+    // This vector is used to cache our SEE for each move
+    // because calling see() everytime is a huge slowdown
     vector<bool> see_bools{};
-    // Move ordering
-    if (capture_moves.size() != 0) { 
-        see_bools = sort_captures(board, capture_moves, tt_hit, entry.best_move);
+
+    // Basically here we are doing check-evasion q-search
+    // If we are not in check, we generate only captures
+    if (!in_check){
+        movegen::legalmoves<movegen::MoveGenType::CAPTURE>(moves, board);
+
+        // Capture move ordering
+        if (moves.size() != 0) { 
+            see_bools = sort_captures(board, moves, tt_hit, entry.best_move);
+        }
+    }
+
+    // If we are in check we generate all quiets, this
+    // is to avoid ending qsearch prematurely when we
+    // haven't checked check-evading moves
+    else {
+        movegen::legalmoves(moves, board);
+
+        // Move ordering
+        if (moves.size() != 0) { 
+            see_bools = sort_moves(board, moves, tt_hit, entry.best_move, ply, search_info);
+        }
     }
 
     // Qsearch pruning stuff
@@ -116,23 +140,33 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
     Move current_best_move{};
     
-    for (int idx = 0; idx < capture_moves.size(); idx++){
+    for (int idx = 0; idx < moves.size(); idx++){
 
         // QSearch movecount pruning
-        if (!board.inCheck() && moves_played >= 2)
+        if (!in_check && moves_played >= 2)
             break;
 
-        Move current_move = capture_moves[idx];
+        Move current_move = moves[idx];
 
         // QSEE pruning, if a move is obviously losing, don't search it
-        if (!see_bools[idx]) 
+        if (!in_check && !see_bools[idx]) 
             continue;
+
+        // To update continuation history
+        int32_t to = current_move.to().index();
+        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+        SearchInfo info{};
+
+        info.parent_parent_move_piece = search_info.parent_move_piece;
+        info.parent_parent_move_square = search_info.parent_move_square;
+        info.parent_move_piece = move_piece;
+        info.parent_move_square = to;
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
         board.makeMove(current_move);
         moves_played++;
-        int32_t score = -q_search(board, -beta, -alpha, ply + 1);
+        int32_t score = -q_search(board, -beta, -alpha, ply + 1, info);
         board.unmakeMove(current_move);
 
         // Updating best_score and alpha beta pruning
@@ -234,7 +268,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Depth <= 0 (because we allow depth to drop below 0) - we end our search and return eval (haven't started qs yet)
     if (depth <= 0){
-        return q_search(board, alpha, beta, ply);
+        return q_search(board, alpha, beta, ply, search_info);
     }
 
     // Get the TT Entry for current position
@@ -279,7 +313,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         && depth <= razoring_max_depth.current 
         && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha  
         && search_info.excluded == 0){
-        return q_search(board, alpha, beta, ply + 1);
+        return q_search(board, alpha, beta, ply + 1, search_info);
     }
 
     // Null move pruning. Basically, we can assume that making a move 

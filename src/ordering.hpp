@@ -12,5 +12,5 @@
 #include "see.hpp"
 #include "search_info.hpp"
 
-void sort_moves(chess::Board& board, chess::Movelist& movelist, bool tt_hit, std::uint16_t tt_move, int32_t ply, SearchInfo search_info);
+std::vector<bool> sort_moves(chess::Board& board, chess::Movelist& movelist, bool tt_hit, uint16_t tt_move, int32_t ply, SearchInfo search_info);
 std::vector<bool> sort_captures(chess::Board& board, chess::Movelist& movelist, bool tt_hit, std::uint16_t tt_move);
