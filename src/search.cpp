@@ -135,19 +135,21 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         int32_t score = -q_search(board, -beta, -alpha, ply + 1);
         board.unmakeMove(current_move);
 
-        // Updating best_score and alpha beta pruning
-        if (score > best_score){
+        // Updating our best score yet
+        if (score > best_score)
             best_score = score;
-            current_best_move = current_move;
 
-            // Update alpha
-            if (score > alpha)
-                alpha = score;
+        // Updating best move when alpha is raised as well
+        // as well as alpha-beta pruning
+        if (score > alpha){
+            alpha = score;
+            current_best_move = current_move;
 
             // Alpha-Beta Pruning
             if (score >= beta)
                 break;
         }
+
     }
 
     NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : best_score > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
@@ -471,7 +473,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // I did not actually test this in sprt 
         if (score > best_score){
             best_score = score;
-            current_best_move = current_move;
 
             if (is_root){
                 root_best_move = current_move;
@@ -481,9 +482,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 best_move_nodes = total_nodes - nodes_b4;
             }
 
-            // Update alpha
+            // Update alpha and best move
             if (score > alpha){
                 alpha = score;
+                current_best_move = current_move;
 
                 // Alpha-Beta Pruning
                 if (score >= beta){
