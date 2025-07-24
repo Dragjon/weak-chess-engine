@@ -149,7 +149,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply, SearchI
         Move current_move = moves[idx];
 
         // QSEE pruning, if a move is obviously losing, don't search it
-        if (!in_check && !see_bools[idx]) 
+        if (!see_bools[idx]) 
             continue;
 
         // To update continuation history
@@ -185,7 +185,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply, SearchI
     }
 
 
-    // This node is a terminal (checkmate)
+    // This node is terminal (checkmate)
     if (in_check && moves_played == 0)
         return -POSITIVE_MATE_SCORE + ply;
 
