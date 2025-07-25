@@ -45,7 +45,7 @@ SearchParam see_pawn("SEEPawn", 100, 70, 130, 10);
 SearchParam see_knight("SEEKnight", 300, 250, 450, 15);
 SearchParam see_bishop("SEEBishop", 300, 250, 450, 15);
 SearchParam see_rook("SEERook", 500, 400, 650, 15);
-SearchParam see_queen("SEEQueen", 500, 400, 650, 15);
+SearchParam see_queen("SEEQueen", 900, 800, 1200, 15);
 
 SearchParam delta_pruning_pawn_bonus("DeltaPruningPawnBonus", 142, 80, 200, 20);
 
