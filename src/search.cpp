@@ -70,9 +70,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     bool tt_hit = tt.probe(zobrists_key, entry);
 
     // Transposition Table cutoffs
-    if (tt_hit && ((entry.type == NodeType::EXACT) 
-    || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) 
-    || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)))
+    if (tt_hit && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta)  || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)))
         return entry.score;
         
     // For TT updating later to determine bound
@@ -171,7 +169,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // max_score for fail-soft negamax
     int32_t best_score = -POSITIVE_INFINITY;
     bool is_root = ply == 0;
-    bool node_is_check = board.inCheck();
+    bool in_check = board.inCheck();
 
     // Important for cutoffs
     // I'm aware this is not the best way to do it but that's for later
@@ -219,7 +217,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // When we are in checkmate during our turn, we lost the game, therefore we 
     // should return a large negative value
     if (!is_root && all_moves.size() == 0){
-        if (node_is_check)
+        if (in_check)
             return -POSITIVE_MATE_SCORE + ply;
 
         // Stalemate jumpscare!
@@ -245,10 +243,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Transposition Table cutoffs
     // Only cut with a greater or equal depth search
-    if (!pv_node && entry.depth >= depth && !is_root && tt_hit 
-        && ((entry.type == NodeType::EXACT) 
-        || (entry.type == NodeType::LOWERBOUND && entry.score >= beta) 
-        || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) && search_info.excluded == 0)
+    if (!pv_node 
+        && entry.depth >= depth 
+        && !is_root 
+        && tt_hit 
+        && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta)  || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) 
+        && search_info.excluded == 0)
         return entry.score;
 
     // Static evaluation for pruning metrics
@@ -257,6 +257,20 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Correct static evaluation with our correction histories
     int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
 
+    // Hindsight extension
+    // If this is a reduced depth search, but our static eval shows
+    // that we are improving, we correct the reduction by extending
+    // the depth "in hindsight"
+    if (!is_root
+        && !in_check
+        && !search_info.excluded == 0
+        && depth >= 1
+        && search_info.parent_reduction >= 1
+        && search_info.parent_static_eval != -100000
+        && static_eval + search_info.parent_static_eval <= -2) {
+        depth += 1;
+    }
+
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
@@ -264,7 +278,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
-    if (!pv_node && !tt_was_pv && !node_is_check && depth <= reverse_futility_depth.current 
+    if (!pv_node 
+        && !tt_was_pv 
+        && !in_check 
+        && depth <= reverse_futility_depth.current 
         && static_eval - reverse_futility_margin.current * depth >= beta 
         && search_info.excluded == 0){
         return (static_eval + beta) / 2;
@@ -275,7 +292,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // with depth is still not able to raise alpha, we can be almost sure 
     // that it will not be able to in the next few depths
     // https://github.com/official-stockfish/Stockfish/blob/ce73441f2013e0b8fd3eb7a0c9fd391d52adde70/src/search.cpp#L833
-    if (!pv_node && !node_is_check 
+    if (!pv_node 
+        && !in_check 
         && depth <= razoring_max_depth.current 
         && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha  
         && search_info.excluded == 0){
@@ -287,11 +305,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // except if it's in a zugzwang. Hence, if we skip out turn and
     // we still maintain beta, then we can prune early. Also do not
     // do NMP when tt suggests that it should fail immediately
-    if (!pv_node && !node_is_check && static_eval >= beta 
+    if (!pv_node 
+        && !in_check 
+        && static_eval >= beta 
         && depth >= null_move_depth.current 
-        && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) 
-        || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) 
-        || board.hasNonPawnMaterial(Color::BLACK)) 
+        && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) 
         && search_info.excluded == 0){
         
         board.makeNullMove();
@@ -312,7 +330,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
     // that are high enough up in the search tree that we would expect to find a transposition
     // to use later. (Comment from Ethereal)
-    if ((pv_node || cut_node) && !node_is_check && depth >= internal_iterative_reduction_depth.current 
+    if ((pv_node || cut_node) 
+        && !in_check 
+        && depth >= internal_iterative_reduction_depth.current 
         && (!tt_hit || (entry.best_move != 0 && entry.depth <= depth - 5)) 
         && search_info.excluded == 0)
         depth--;
@@ -360,7 +380,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Quiet Move Prunings
         if (!is_root && !is_noisy_move && best_score > -POSITIVE_WIN_SCORE) {
             // Quiet History Pruning
-            if (depth <= 4 && !node_is_check && move_history < depth * depth * -2048) 
+            if (depth <= 4 
+                && !in_check 
+                && move_history < depth * depth * -2048) 
                 break;
 
             // Late Move Pruning
@@ -368,7 +390,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 continue;
 
             // Futility Pruning
-            if (depth < 5 && !pv_node && !node_is_check && (static_eval + 100) + 100 * depth <= alpha) 
+            if (depth < 5 
+                && !pv_node 
+                && !in_check 
+                && (static_eval + 100) + 100 * depth <= alpha) 
                 continue;
         }
 
@@ -400,7 +425,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Static Exchange Evaluation Pruning
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
-        if (!pv_node && !see(board, current_move, see_margin) && alpha < POSITIVE_WIN_SCORE)
+        if (!pv_node 
+            && !see(board, current_move, see_margin) 
+            && alpha < POSITIVE_WIN_SCORE)
             continue;
 
         // Quiet late moves reduction - we have to trust that our
@@ -446,6 +473,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         info.parent_parent_move_square = parent_move_square;
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
+        info.parent_static_eval = static_eval;
 
         // Principle Variation Search
         if (move_count == 1)
@@ -467,7 +495,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         board.unmakeMove(current_move);
 
         // Updating best_score and alpha beta pruning
-        // I did not actually test this in sprt 
         if (score > best_score){
             best_score = score;
             current_best_move = current_move;
@@ -555,7 +582,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
 
         // Update correction histories
-        if (!node_is_check && !board.isCapture(current_best_move) 
+        if (!in_check && !board.isCapture(current_best_move) 
             && !(bound == NodeType::LOWERBOUND && best_score <= static_eval) 
             && !(bound == NodeType::UPPERBOUND && best_score >= static_eval)) {
             
