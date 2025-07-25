@@ -374,7 +374,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
-        SearchInfo info{};
         bool do_singular_search =  !is_root &&  depth >= 6 
                                     &&  current_move.move() == entry.best_move 
                                     &&  entry.depth >= depth - 3 
@@ -383,14 +382,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         if (do_singular_search)
         {
+            SearchInfo se_info = search_info;
             int32_t value = max(-POSITIVE_MATE_SCORE, entry.score - depth);
             int32_t singular_beta = value;
             int32_t singular_depth = (depth - 1) / 2;
 
-            info.excluded = entry.best_move;
-            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, info); 
-
-            info.excluded = 0;
+            se_info.excluded = entry.best_move;
+            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, se_info); 
 
             if (score < singular_beta)
                 extension = 1;
@@ -443,6 +441,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             quiets_searched[quiets_searched_idx++] = current_move;
 
         // To update continuation history
+        SearchInfo info{};
         info.parent_parent_move_piece = parent_move_piece;
         info.parent_parent_move_square = parent_move_square;
         info.parent_move_piece = move_piece;
