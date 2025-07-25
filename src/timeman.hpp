@@ -35,7 +35,7 @@ inline double get_bm_scale() {
     return best_move_scale[bm_stability];
 }
 
-// Inspired by Potential's eval stability, but with actual average instead of (prev_avg + new_score) / 2
+// Inspired by Potential's eval stability
 inline double get_score_scale() {
     double score_scale[5] = {1.25, 1.15, 1.00, 0.94, 0.88};
     return score_scale[score_stability];

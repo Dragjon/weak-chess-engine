@@ -19,7 +19,7 @@
 #include "bench.hpp"
 #include "history.hpp"
 
-#define IS_TUNING 0
+#define IS_TUNING 1
 
 using namespace std;
 using namespace chess;
@@ -419,7 +419,7 @@ int32_t main(int32_t argc, char* argv[]) {
 
         // Prints openbench spsa config
         else if (words[0] == "obpasta"){
-            printOpenBenchConfig();
+            print_open_bench_config();
         }
 
         // Mostly for debugging purposes. This is a nonstandard UCI command

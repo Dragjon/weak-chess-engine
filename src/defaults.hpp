@@ -49,11 +49,11 @@ inline void print_all_uci_options() {
 }
 
 // Prints the OpenBench SPSA config
-inline void printOpenBenchConfig()
+inline void print_open_bench_config()
 {
     for (const auto& param : all_params)
     {
-        if (param->name == "Threads" || param->name == "Hash" || param->name == "NullMoveDepth" || param->name == "LateMoveReductionDepth" || param->name == "AspirationWindowDepth") // Skip tt_size and threads and others
+        if (param->name == "Threads" || param->name == "Hash")
             continue;
 
         std::cout << param->name << ", int, "
@@ -69,35 +69,38 @@ inline void printOpenBenchConfig()
 extern SearchParam tt_size;
 extern SearchParam threads;
 extern SearchParam reverse_futility_margin;
-extern SearchParam reverse_futility_depth;
 extern SearchParam null_move_depth;
-extern SearchParam null_move_reduction;
-extern SearchParam late_move_reduction_depth;
+extern SearchParam null_move_base;
+extern SearchParam null_move_divisor;
 extern SearchParam late_move_reduction_base;
 extern SearchParam late_move_reduction_multiplier;
-extern SearchParam aspiration_window_depth;
+extern SearchParam late_move_reduction_corrplexity;
+extern SearchParam late_move_pruning_base;
+extern SearchParam late_move_pruning_quad;
+extern SearchParam futility_eval_base;
+extern SearchParam futility_depth_mul;
 extern SearchParam aspiration_window_delta;
 extern SearchParam aspiration_widening_factor;
-extern SearchParam internal_iterative_reduction_depth;
 extern SearchParam see_noisy_margin;
 extern SearchParam see_quiet_margin;
+extern SearchParam quiet_history_pruning_quad;
 extern SearchParam history_bonus_base;
 extern SearchParam history_bonus_mul_linear;
 extern SearchParam history_bonus_mul_quad;
 extern SearchParam history_malus_base;
 extern SearchParam history_malus_mul_linear;
 extern SearchParam history_malus_mul_quad;
-extern SearchParam razoring_max_depth;
+extern SearchParam history_reduction_depth_mul;
 extern SearchParam razoring_base;
-extern SearchParam razoring_linear_mul;
 extern SearchParam razoring_quad_mul;
-extern SearchParam tempo;
-extern SearchParam soft_tm_ratio;
-extern SearchParam hard_tm_ratio;
-extern SearchParam node_tm_base;
-extern SearchParam node_tm_mul;
 extern SearchParam see_pawn;
 extern SearchParam see_knight;
 extern SearchParam see_bishop;
 extern SearchParam see_rook;
 extern SearchParam see_queen;
+extern SearchParam delta_pruning_pawn_bonus;
+extern SearchParam tempo;
+extern SearchParam soft_tm_ratio;
+extern SearchParam hard_tm_ratio;
+extern SearchParam node_tm_base;
+extern SearchParam node_tm_mul;
