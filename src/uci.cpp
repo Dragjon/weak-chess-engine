@@ -192,6 +192,7 @@ int32_t main(int32_t argc, char* argv[]) {
             else {
                 tt_size.print_uci_option();
                 threads.print_uci_option();
+                move_overhead.print_uci_option();
             }
             cout << "uciok\n";
         }

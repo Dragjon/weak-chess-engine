@@ -68,6 +68,7 @@ inline void print_open_bench_config()
 
 extern SearchParam tt_size;
 extern SearchParam threads;
+extern SearchParam move_overhead;
 extern SearchParam reverse_futility_margin;
 extern SearchParam null_move_depth;
 extern SearchParam null_move_base;
