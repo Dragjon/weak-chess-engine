@@ -128,7 +128,6 @@ Or configure it in a GUI like **CuteChess** or **Arena**.
 * [Sirius](https://github.com/mcthouacbb/Sirius) - Strongest HCE engine out there excluding SF HCE. Lots of new ideas and yoinkable stuff. LMR Corrplexity and other search stuff was based on Sirius. Original values for some params are also taken from Sirius.
 * [Hobbes](https://github.com/kelseyde/hobbes-chess-engine) - Occasional reference to see how things should be done. Also the MattBench community engine.
 * [Stash](https://gitlab.com/mhouppin/stash-bot) - Used to do progtests and estimate my engine's elo rating.
----
 
 ### People who provided help in the development process
 * Disservin - Used chess.hpp library, which also had really good documentation.
@@ -138,3 +137,4 @@ Or configure it in a GUI like **CuteChess** or **Arena**.
 * nocturn9x/Matt [Heimdall] - Setting up mattbench and allowing me to join
 * Bobingstern [Tarnished] - Helped with A LOT of general stuff as well as debugging UBs and info regarding elo gains
 * The whole of MattBench server, Stockfish server, Engine Programming server and Sebastian Lague server for getting me into chess programming.
+---
