@@ -642,7 +642,7 @@ int32_t search_root(Board &board){
 
                 // Upperbound
                 if (new_score <= alpha){
-                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << alpha << " upperbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " pv " << uci::moveToUci(root_best_move);
+                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << alpha << " upperbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move);
                     
                     Board new_board = Board(board.getFen());
                     new_board.makeMove(root_best_move);
@@ -655,7 +655,7 @@ int32_t search_root(Board &board){
 
                 // Lowerbound
                 else if (new_score >= beta){
-                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << beta << " lowerbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " pv " << uci::moveToUci(root_best_move);
+                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << beta << " lowerbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move);
                     
                     Board new_board = Board(board.getFen());
                     new_board.makeMove(root_best_move);
@@ -667,7 +667,7 @@ int32_t search_root(Board &board){
 
                 // Score falls within window (exact)
                 else {
-                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << new_score << " nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " pv " << uci::moveToUci(root_best_move);
+                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << new_score << " nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move);
                     
                     Board new_board = Board(board.getFen());
                     new_board.makeMove(root_best_move);

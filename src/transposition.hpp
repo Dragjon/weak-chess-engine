@@ -11,7 +11,8 @@ const int32_t TT_DEFAULT_SIZE = 64;
 enum class NodeType : uint8_t {
     EXACT,
     LOWERBOUND,
-    UPPERBOUND
+    UPPERBOUND,
+    NONE
 };
 
 // Single TT Entry
@@ -19,7 +20,7 @@ struct TTEntry {
     uint64_t key = 0; // Zobrist hash
     int32_t score = 0; // Score 
     int32_t depth = -1; // Depth
-    NodeType type = NodeType::EXACT;
+    NodeType type = NodeType::NONE;
     uint16_t best_move = 0; // Encoded move
     bool tt_was_pv = false;
 };
@@ -61,6 +62,18 @@ public:
             return true;
         }
         return false;
+    }
+
+    int32_t hashfull() const {
+        int32_t fill = 0;
+        size_t probe_limit = std::min(size, size_t(1000));
+
+        for (size_t i = 0; i < probe_limit; ++i) {
+            if (table[i].type != NodeType::NONE) {
+                ++fill;
+            }
+        }
+        return fill;
     }
 };
 
