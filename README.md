@@ -80,6 +80,8 @@
 ## Playing Instructions
 Weak does not come with its own GUI interface. To play against weak, you can use any suitable chess GUI interface such as Cutechess-GUI, Banksia, Arena, En-Croissant etc. You can also challenge Weak at [lichess](https://lichess.org/@/WeakChessEngine) although its rarely online. 
 
+---
+
 ## Build Instructions
 
 ### Requirements
@@ -110,6 +112,8 @@ go
 
 Or configure it in a GUI like **CuteChess** or **Arena**.
 
+---
+
 ## Non-Standard UCI Commands
 * `print` - Prints the board position
 * `seval` - Prints the current static evaluation
@@ -117,6 +121,13 @@ Or configure it in a GUI like **CuteChess** or **Arena**.
 * `time` - Prints the current time management info
 * `see <move>` - Prints the SEE bolean for that move
 * `obpasta` - Prints OpenBench SPSA Config
+
+---
+
+## UCI Options
+* `Hash` - The transposition hash
+* `Threads` - Number of threads to run on.
+* `Move Overhead` - Number of ms to reduce from the time given due to communication overhead.
 
 ---
 
