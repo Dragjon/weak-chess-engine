@@ -616,7 +616,6 @@ int32_t search_root(Board &board){
         // Aspiration window search, we predict that the score from previous searches will be
         // around the same as the next depth +/- some margin.
         int32_t score = 0;
-        int32_t delta = aspiration_window_delta.current;
         int32_t alpha = DEFAULT_ALPHA;
         int32_t beta = DEFAULT_BETA;
         while ((global_depth == 0 || !soft_bound_time_exceeded()) && global_depth < MAX_SEARCH_DEPTH){
@@ -625,6 +624,7 @@ int32_t search_root(Board &board){
 
             // Increment the global depth since global_depth starts from 0
             global_depth++;
+            int32_t delta = aspiration_window_delta.current;
             int32_t researches = 0;
             int32_t new_score = 0;
 
