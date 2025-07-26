@@ -96,7 +96,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // is still not enough to cover the distance between alpha and eval, playing a move
     // is futile. Minor boost for pawn captures idea from Ethereal: 
     // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L872
-    if (eval + max(142, move_best_case_value(board)) < alpha)
+    if (eval + max(delta_pruning_pawn_bonus.current, move_best_case_value(board)) < alpha)
         return eval;
 
     // Get all legal moves for our moveloop in our search
@@ -267,7 +267,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (!pv_node 
         && !tt_was_pv 
         && !in_check 
-        && depth <= reverse_futility_depth.current 
+        && depth <= 8 
         && static_eval - reverse_futility_margin.current * depth >= beta 
         && search_info.excluded == 0){
         return (static_eval + beta) / 2;
@@ -280,8 +280,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // https://github.com/official-stockfish/Stockfish/blob/ce73441f2013e0b8fd3eb7a0c9fd391d52adde70/src/search.cpp#L833
     if (!pv_node 
         && !in_check 
-        && depth <= razoring_max_depth.current 
-        && static_eval + razoring_base.current + razoring_linear_mul.current * depth + razoring_quad_mul.current * depth * depth <= alpha  
+        && depth <= 3 
+        && static_eval + razoring_base.current + razoring_quad_mul.current * depth * depth <= alpha  
         && search_info.excluded == 0){
         return q_search(board, alpha, beta, ply + 1);
     }
@@ -294,12 +294,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (!pv_node 
         && !in_check 
         && static_eval >= beta 
-        && depth >= null_move_depth.current 
+        && depth >= 2 
         && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) 
         && search_info.excluded == 0){
         
         board.makeNullMove();
-        int32_t reduction = 3 + depth / 3;
+        int32_t reduction = null_move_base.current + depth / null_move_divisor.current;
                                                                                         
         // Search has no parents :(
         SearchInfo info{};                                                                   
@@ -318,7 +318,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // to use later. (Comment from Ethereal)
     if ((pv_node || cut_node) 
         && !in_check 
-        && depth >= internal_iterative_reduction_depth.current 
+        && depth >= 7 
         && (!tt_hit || (entry.best_move != 0 && entry.depth <= depth - 5)) 
         && search_info.excluded == 0)
         depth--;
@@ -368,18 +368,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Quiet History Pruning
             if (depth <= 4 
                 && !in_check 
-                && move_history < depth * depth * -2048) 
+                && move_history < depth * depth * -quiet_history_pruning_quad.current) 
                 break;
 
             // Late Move Pruning
-            if (move_count >= 4 + 3 * depth * depth) 
+            if (move_count >= late_move_pruning_base.current + late_move_pruning_quad.current * depth * depth) 
                 continue;
 
             // Futility Pruning
-            if (depth < 5 
+            if (depth <= 4 
                 && !pv_node 
                 && !in_check 
-                && (static_eval + 100) + 100 * depth <= alpha) 
+                && (static_eval + futility_eval_base.current) + futility_depth_mul.current * depth <= alpha) 
                 continue;
         }
 
@@ -419,19 +419,19 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
-        if (!is_noisy_move && depth >= late_move_reduction_depth.current){
+        if (!is_noisy_move && depth >= 3){
 
             // Basic lmr "loglog" formula
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
 
             // Custom history reductions, reduce if a move's quiet 
             // history score is very low, scaled by depth
-            reduction += move_history < -1024 * depth;
+            reduction += move_history < -history_reduction_depth_mul.current * depth;
 
             // LMR corrplexity - reduce less if we are in a complex 
             // position, determined by the difference between corrected eval
             // and raw evaluation
-            reduction -= abs(raw_eval - static_eval) > 89;
+            reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
         }
 
         int32_t score = 0;
@@ -516,14 +516,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                         // Continuation History Update
                         // 1-ply (Countermoves)
                         if (parent_move_piece != -1 && parent_move_square != -1){
-                            int32_t conthist_bonus = clamp(500 * depth * depth + 200 * depth + 150, -MAX_HISTORY, MAX_HISTORY);
-                            one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] += conthist_bonus - one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] * abs(conthist_bonus) / MAX_HISTORY;
+                            one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] += bonus - one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] * abs(bonus) / MAX_HISTORY;
                         }
                         
                         // 2-ply (Follow-up moves)
                         if (parent_parent_move_piece != -1 && parent_parent_move_square != -1){
-                            int32_t conthist_bonus = clamp(500 * depth * depth + 200 * depth + 150, -MAX_HISTORY, MAX_HISTORY);
-                            two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] += conthist_bonus - two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] * abs(conthist_bonus) / MAX_HISTORY;
+                            two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] += bonus - two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] * abs(bonus) / MAX_HISTORY;
                         }
 
                         // All History Malus
@@ -535,18 +533,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
                             // Quiet History Malus
                             if (move_count > 1 && !board.isCapture(current_best_move)){
-                                quiet_history[turn][from][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_bonus_base.current;
+                                quiet_history[turn][from][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current;
                             }
 
                             // Conthist Malus
                             // 1-ply (Countermoves)
                             if (parent_move_piece != -1 && parent_move_square != -1){
-                                one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] -= 300 * depth * depth + 280 * depth + 50;
+                                one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current;
                             }
 
                             // 2-ply (Follow-up moves)
                             if (parent_parent_move_piece != -1 && parent_parent_move_square != -1){
-                                two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  -= 300 * depth * depth + 280 * depth + 50;
+                                two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current;
                             }
                         }
                     }
@@ -630,7 +628,7 @@ int32_t search_root(Board &board){
             int32_t researches = 0;
             int32_t new_score = 0;
 
-            if (global_depth >= aspiration_window_depth.current){
+            if (global_depth >= 4){
                 alpha = max(-POSITIVE_INFINITY, score - delta);
                 beta = min(POSITIVE_INFINITY, score + delta);
             }

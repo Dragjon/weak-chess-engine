@@ -1,10 +1,11 @@
 #include "chess.hpp"
 #include "see.hpp"
+#include "defaults.hpp"
 
 using namespace chess;
 using namespace std;
 
-int32_t see_piece_values[7] = {100, 300, 300, 500, 900, 0, 0};
+int32_t see_piece_values[7] = {105, 340, 312, 502, 928, 0, 0};
 
 // Estimate the value of a move
 int32_t move_estimated_value(Board &board, Move move){
