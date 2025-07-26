@@ -44,6 +44,7 @@
     * Internal iterative reductions
     * Singular extensions
       * Multi-cut
+      * Double extensions
     * History leaf pruning
     * Late move pruning
     * Futility pruning
