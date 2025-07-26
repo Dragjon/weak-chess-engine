@@ -676,12 +676,8 @@ int32_t search_root(Board &board){
 
                     break;
                 }
-
-                // If we exceed our time management, we stop widening 
-                if (soft_bound_time_exceeded())
-                    break;
                     
-                else delta += delta * aspiration_widening_factor.current / 100;
+                delta += delta * aspiration_widening_factor.current / 100;
             }
 
             score = new_score;
