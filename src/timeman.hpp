@@ -7,6 +7,7 @@
 // Time tracking
 extern int64_t max_soft_time_ms;
 extern int64_t max_hard_time_ms;
+extern int64_t move_overhead_ms;
 extern std::chrono::time_point<std::chrono::system_clock> search_start_time;
 
 // Get's the epased time after searching

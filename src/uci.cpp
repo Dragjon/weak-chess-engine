@@ -292,7 +292,7 @@ int32_t main(int32_t argc, char* argv[]) {
                         // If its white to move we get white's time else we get black's time
                         if (board.sideToMove() == Color::WHITE){
                             if (words[i] == "wtime"){
-                                base_time = std::stoll(words[i+1]);
+                                base_time = max(1ll, std::stoll(words[i+1]) - move_overhead_ms);
                             }
                             
                             else if (words[i] == "winc"){
@@ -301,7 +301,7 @@ int32_t main(int32_t argc, char* argv[]) {
                         }
                         else if (board.sideToMove() == Color::BLACK){
                             if (words[i] == "btime"){
-                                base_time = std::stoll(words[i+1]);
+                                base_time = max(1ll, std::stoll(words[i+1]) - move_overhead_ms);
                             }
                             
                             else if (words[i] == "binc"){
@@ -373,6 +373,13 @@ int32_t main(int32_t argc, char* argv[]) {
             else if (option_name == see_queen.name){
                 see_queen.set(value);
                 see_piece_values[4] = value;
+            }
+
+            // Move Overhead
+            // We don't parse "Move Overhead" beacuse our option name
+            // extracted is only a single word after "name"
+            else if (option_name == "Move"){
+                move_overhead_ms = value;
             }
             
             else {

@@ -65,6 +65,10 @@
         "xutility": "cpp",
         "chrono": "cpp",
         "forward_list": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "coroutine": "cpp",
+        "map": "cpp",
+        "random": "cpp",
+        "xtree": "cpp"
     }
 }
