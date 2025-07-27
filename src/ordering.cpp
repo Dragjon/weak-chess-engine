@@ -64,7 +64,7 @@ void sort_moves(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move,
         movelist[i] = scored_moves[i].second;
     }
 }
-
+ 
 
 // Captures sorting
 // returns a boolean vector matching the see bool result of each capture
