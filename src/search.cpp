@@ -414,7 +414,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 return singular_beta;
 
             
-            // Potential multi-cut
+            // Negative extensions
+            // Potential for multi-cut
             else if (entry.score >= beta)
                 extension = -3;
         }
