@@ -416,7 +416,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             
             // Potential multi-cut
             else if (entry.score >= beta)
-                extension = -1;
+                extension = -3;
         }
 
         // Static Exchange Evaluation Pruning
