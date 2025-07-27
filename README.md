@@ -45,6 +45,7 @@
     * Singular extensions
       * Multi-cut
       * Double extensions
+      * Negative extensions
     * History leaf pruning
     * Late move pruning
     * Futility pruning
