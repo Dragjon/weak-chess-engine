@@ -413,11 +413,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             else if (singular_beta >= beta)
                 return singular_beta;
 
-            
             // Negative extensions
             // Potential for multi-cut
             else if (entry.score >= beta)
                 extension = -3;
+
+            else if (entry.score <= alpha)
+                extension = -1;
         }
 
         // Static Exchange Evaluation Pruning
