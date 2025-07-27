@@ -412,12 +412,15 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Multi-cut pruning
             else if (singular_beta >= beta)
                 return singular_beta;
-
             
             // Negative extensions
             // Potential for multi-cut
             else if (entry.score >= beta)
                 extension = -3;
+
+            // Cutnode negative extensions
+            else if (cut_node)
+                extension = -2;
         }
 
         // Static Exchange Evaluation Pruning
