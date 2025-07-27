@@ -450,8 +450,8 @@ int32_t evaluate(const chess::Board& board) {
     // Rooks on open files
     if (num_w_rooks_on_op_file == 1) eval_array[0] += rook_open_file[0];
     if (num_w_rooks_on_op_file == 2) eval_array[0] += rook_open_file[1];
-    if (num_b_rooks_on_op_file == 1) eval_array[0] += rook_open_file[0];
-    if (num_b_rooks_on_op_file == 2) eval_array[0] += rook_open_file[1];
+    if (num_b_rooks_on_op_file == 1) eval_array[1] += rook_open_file[0];
+    if (num_b_rooks_on_op_file == 2) eval_array[1] += rook_open_file[1];
 
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
