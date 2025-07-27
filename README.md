@@ -76,6 +76,7 @@
   * Isolated pawns
   * Threats
   * Rook on semi-open file
+  * Pawn phalanx
 
 ---
 
