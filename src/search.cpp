@@ -21,6 +21,7 @@ using namespace std;
 
 // Summoning multithread demons with global vars!!
 // Storing the final best move for every complete search
+chess::Move root_best_move_unupdated{};
 chess::Move root_best_move{};
 chess::Move previous_best_move{};
 
@@ -499,7 +500,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             current_best_move = current_move;
 
             if (is_root){
-                root_best_move = current_move;
+                root_best_move_unupdated = current_move;
 
                 // Node time management, we get total number of nodes spent searching on best move
                 // and scale our tm based on it
@@ -656,10 +657,10 @@ int32_t search_root(Board &board){
 
                 // Upperbound
                 if (new_score <= alpha){
-                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << alpha << " upperbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move);
+                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << alpha << " upperbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move_unupdated);
                     
                     Board new_board = Board(board.getFen());
-                    new_board.makeMove(root_best_move);
+                    new_board.makeMove(root_best_move_unupdated);
                     print_tt_pv(new_board, max(global_depth - 1, 0));
                     cout << endl;
 
@@ -669,10 +670,10 @@ int32_t search_root(Board &board){
 
                 // Lowerbound
                 else if (new_score >= beta){
-                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << beta << " lowerbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move);
+                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << beta << " lowerbound nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move_unupdated);
                     
                     Board new_board = Board(board.getFen());
-                    new_board.makeMove(root_best_move);
+                    new_board.makeMove(root_best_move_unupdated);
                     print_tt_pv(new_board, max(global_depth - 1, 0));
                     cout << endl;
 
@@ -681,10 +682,10 @@ int32_t search_root(Board &board){
 
                 // Score falls within window (exact)
                 else {
-                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << new_score << " nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move);
+                    cout << "info depth " << global_depth << " seldepth " << seldpeth << " time " << elapsed_time << " score cp " << new_score << " nodes " << total_nodes << " nps " <<   (1000 * total_nodes) / (elapsed_time + 1) << " hashfull " << tt.hashfull() << " pv " << uci::moveToUci(root_best_move_unupdated);
                     
                     Board new_board = Board(board.getFen());
-                    new_board.makeMove(root_best_move);
+                    new_board.makeMove(root_best_move_unupdated);
                     print_tt_pv(new_board, max(global_depth - 1, 0));
                     cout << endl;
 
@@ -700,6 +701,10 @@ int32_t search_root(Board &board){
 
             score = new_score;
             root_best_score = score;
+
+            // We only update root best move when we successfully complete an iteratoe deepening loop (or we might get 
+            // bad search results from search failing upperbound/lowerbound)
+            root_best_move = root_best_move_unupdated;
 
             // Score stability time management
             avg_prev_score = (avg_prev_score + root_best_score) / 2;

@@ -24,6 +24,7 @@ struct SearchAbort : public std::exception {
 };
 
 // The global best move variable
+extern chess::Move root_best_move_unupdated;
 extern chess::Move root_best_move;
 extern chess::Move previous_best_move;
 
