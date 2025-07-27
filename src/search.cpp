@@ -419,8 +419,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 extension = -3;
 
             // Cutnode negative extensions
-            else if (cut_node)
-                extension = -2;
+            else if (entry.score <= alpha && cut_node)
+                extension = -1;
         }
 
         // Static Exchange Evaluation Pruning
