@@ -22,7 +22,7 @@ void reset_continuation_history();
 
 // Correction history
 extern const int32_t corrhist_size;
-extern int32_t pawn_correction_history[2][16384];
+extern int32_t pawn_correction_history[16384];
 extern int32_t non_pawn_correction_history[2][16384];
 extern int32_t minor_correction_history[2][16384];
 extern int32_t major_correction_history[2][16384];
