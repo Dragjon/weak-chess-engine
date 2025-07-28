@@ -283,7 +283,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         && depth <= 3 
         && static_eval + razoring_base.current + razoring_quad_mul.current * depth * depth <= alpha  
         && search_info.excluded == 0){
-        return q_search(board, alpha, beta, ply + 1);
+        return static_eval;
     }
 
     // Null move pruning. Basically, we can assume that making a move 
