@@ -473,6 +473,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         info.parent_parent_move_square = parent_move_square;
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
+        info.excluded = search_info.excluded;
 
         // Principle Variation Search
         if (move_count == 1)
