@@ -149,7 +149,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     }
 
     NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : best_score > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
-    uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
+    uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? entry.best_move : current_best_move.move();
 
     // Storing transpositions
     tt.store(zobrists_key, clamp(best_score, -40000, 40000), 0, bound, best_move_tt, tt_hit ? entry.tt_was_pv : false);
@@ -576,7 +576,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Don't store TT in singular searches
     if (search_info.excluded == 0){
         NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : alpha > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
-        uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? 0 : current_best_move.move();
+        uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? entry.best_move : current_best_move.move();
 
         // Update correction histories
         if (!in_check && !board.isCapture(current_best_move) 
