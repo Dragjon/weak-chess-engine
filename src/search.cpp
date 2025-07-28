@@ -411,7 +411,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                         extension = 2;
 
                     // Triple extensions
-                    if (score < singular_beta - 45)
+                    if (score < singular_beta - 100)
                         extension = 3;
                 }
             }
