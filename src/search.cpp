@@ -279,6 +279,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // that it will not be able to in the next few depths
     // https://github.com/official-stockfish/Stockfish/blob/ce73441f2013e0b8fd3eb7a0c9fd391d52adde70/src/search.cpp#L833
     if (!pv_node 
+        && !tt_was_pv
         && !in_check 
         && depth <= 3 
         && static_eval + razoring_base.current + razoring_quad_mul.current * depth * depth <= alpha  
