@@ -103,7 +103,8 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     Movelist capture_moves{};
     movegen::legalmoves<movegen::MoveGenType::CAPTURE>(capture_moves, board);
 
-    vector<bool> see_bools{};
+    std::array<bool, 256> see_bools{};
+
     // Move ordering
     if (capture_moves.size() != 0) { 
         see_bools = sort_captures(board, capture_moves, tt_hit, entry.best_move);
@@ -409,9 +410,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                     extension = 2;
             }
 
-            // Fail-soft multi-cut pruning
+            // Multi-cut pruning
             else if (singular_beta >= beta)
-                return score;
+                return singular_beta;
             
             // Negative extensions
             // Potential for multi-cut
