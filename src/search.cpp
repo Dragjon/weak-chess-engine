@@ -103,7 +103,8 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     Movelist capture_moves{};
     movegen::legalmoves<movegen::MoveGenType::CAPTURE>(capture_moves, board);
 
-    vector<bool> see_bools{};
+    std::array<bool, 256> see_bools{};
+
     // Move ordering
     if (capture_moves.size() != 0) { 
         see_bools = sort_captures(board, capture_moves, tt_hit, entry.best_move);
