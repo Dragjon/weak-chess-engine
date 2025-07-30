@@ -409,9 +409,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                     extension = 2;
             }
 
-            // Multi-cut pruning
+            // Fail-soft multi-cut pruning
             else if (singular_beta >= beta)
-                return singular_beta;
+                return score;
             
             // Negative extensions
             // Potential for multi-cut
