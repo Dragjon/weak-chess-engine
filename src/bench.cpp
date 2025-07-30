@@ -74,7 +74,7 @@ void bench(int32_t depth){
         max_hard_time_ms = 10000000000ll;
         max_soft_time_ms = 10000000000ll;
         SearchInfo info{};
-        alpha_beta(board, depth, DEFAULT_ALPHA, DEFAULT_BETA, 0, false, info);
+        alpha_beta(board, depth, DEFAULT_ALPHA, DEFAULT_BETA, 0, false, info, true);
         node_count += total_nodes;
     }
     cout << node_count << " nodes " <<  (1000 * node_count) / (elapsed_ms() + 1)  << " nps" << endl;
