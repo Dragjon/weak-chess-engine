@@ -295,6 +295,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (!pv_node 
         && !in_check 
         && static_eval >= beta 
+        && abs(beta) <= POSITIVE_WIN_SCORE
         && depth >= 2 
         && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) 
         && search_info.excluded == 0){
