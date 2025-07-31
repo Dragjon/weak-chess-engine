@@ -348,6 +348,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     for (int idx = 0; idx < all_moves.size(); idx++){
 
+        int32_t new_depth = depth;
         int32_t reduction = 0;
         int32_t extension = 0;
         int64_t nodes_b4 = total_nodes;
@@ -359,9 +360,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             continue;
 
         move_count++;
-
         bool is_noisy_move = board.isCapture(current_move);
-
         int32_t move_history = !is_noisy_move ? quiet_history[board.sideToMove() == chess::Color::WHITE][current_move.from().index()][current_move.to().index()] : 0;
 
         // Quiet Move Prunings
@@ -475,20 +474,23 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
 
+        // Adjust new depth
+        new_depth = depth + extension - 1;
+
         // Principle Variation Search
         if (move_count == 1)
-            score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+            score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
         else {
-            score = -alpha_beta(board, depth - reduction + extension - 1, -alpha - 1, -alpha, ply + 1, true, info);
+            score = -alpha_beta(board, new_depth - reduction, -alpha - 1, -alpha, ply + 1, true, info);
 
             // Triple PVS
             if (reduction > 0 && score > alpha){                                          
-                score = -alpha_beta(board, depth + extension - 1, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+                score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, !cut_node, info);
             }
 
             // Research
             if (score > alpha && score < beta) {
-                score = -alpha_beta(board, depth + extension - 1, -beta, -alpha, ply + 1, false, info);
+                score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
             }
         }
 
