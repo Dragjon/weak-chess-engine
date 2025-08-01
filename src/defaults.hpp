@@ -91,7 +91,7 @@ extern SearchParam history_bonus_mul_quad;
 extern SearchParam history_malus_base;
 extern SearchParam history_malus_mul_linear;
 extern SearchParam history_malus_mul_quad;
-extern SearchParam history_reduction_depth_mul;
+extern SearchParam history_reduction_div;
 extern SearchParam razoring_base;
 extern SearchParam razoring_quad_mul;
 extern SearchParam see_pawn;
