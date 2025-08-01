@@ -60,7 +60,7 @@ SearchParam futility_eval_base("FutilityEvalBase", 104, 50, 200, 15);
 SearchParam futility_depth_mul("FutilityDepthMul", 101, 50, 200, 6);
 
 SearchParam aspiration_window_delta("AspirationWindowDelta", 9, 5, 30, 2);
-SearchParam aspiration_widening_factor("AspirationWideningFactor", 3, 1, 200, 20);
+SearchParam aspiration_widening_factor("AspirationWideningFactor", 50, 1, 200, 10);
 
 SearchParam see_noisy_margin("SeeNoisyMargin", -98, -120, -30, 6);
 SearchParam see_quiet_margin("SeeQuietMargin", -55, -120, -30, 6);
@@ -75,7 +75,7 @@ SearchParam history_malus_base("HistoryMalusBase", 1, -384, 768, 64);
 SearchParam history_malus_mul_linear("HistoryMalusMulLinear", 260, 64, 384, 32);
 SearchParam history_malus_mul_quad("HistoryMalusMulQuad", 145, 1, 1536, 64);
 
-SearchParam history_reduction_div("HistoryReductionDiv", 8192, 1024, 16384, 128);
+SearchParam history_reduction_div("HistoryReductionDiv", 8192, 1024, 16384, 64);
 
 SearchParam razoring_base("RazoringBase", 616, -384, 768, 64);
 SearchParam razoring_quad_mul("RazoringQuadMul", 308, 1, 1536, 64);
