@@ -247,7 +247,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Only cut with a greater or equal depth search
     if (!pv_node 
         && entry.depth >= depth 
-        && !is_root 
         && tt_hit 
         && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta)  || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) 
         && search_info.excluded == 0)
@@ -543,7 +542,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                         }
 
                         // All History Malus
-                        for (int32_t i = 0; i < quiets_searched_idx; i++){
+                        for (int32_t i = 0; i < quiets_searched_idx - 1; i++){
                             Move quiet = quiets_searched[i];
                             from = quiet.from().index();
                             to = quiet.to().index();
