@@ -453,6 +453,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
 
             // Bestscore complexity reductions
+            // When we raise best_score too many times in a certain span of moves
+            // this means that our move ordering is probably not working well
+            // and could indicate that the position is complex, hence, we 
+            // reduce less
             reduction -= best_raises > (floor(2.0 * log(move_count)) + 2);
         }
 
