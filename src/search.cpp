@@ -447,6 +447,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // position, determined by the difference between corrected eval
             // and raw evaluation
             reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+
+            // Reduce more in cut nodes
+            reduction += cut_node;
         }
 
         int32_t score = 0;
