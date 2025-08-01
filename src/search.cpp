@@ -426,7 +426,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Static Exchange Evaluation Pruning
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
-        if (!pv_node 
+        if (!is_root 
             && !see(board, current_move, see_margin) 
             && best_score > -POSITIVE_WIN_SCORE)
             continue;
