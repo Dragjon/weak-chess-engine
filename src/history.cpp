@@ -65,8 +65,11 @@ void reset_correction_history() {
     }
 }
 
+const int32_t MAX_CORRHIST = 1024;
+
 // Updates all the correction histories given the difference between static eval and score
 // Reference: https://github.com/ProgramciDusunur/Potential/pull/221/commits/ea7701117ca87c9fffaf05330ee7029093150520
+// Another reference: https://github.com/Bobingstern/Tarnished/blob/master/src/search.h#L277
 void update_correction_history(const Board &board, int32_t depth, int32_t diff) {
     uint64_t pawn_key = get_pawn_key(board);
     uint64_t non_pawn_key = get_non_pawn_key(board);
@@ -79,21 +82,17 @@ void update_correction_history(const Board &board, int32_t depth, int32_t diff) 
     int32_t majors_key_idx = majors_key % 16384;
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
-    int32_t scaled_diff = diff * 256;
-    int32_t new_weight = min(depth + 1, 16);
+    int32_t clamped_diff = clamp(diff, -MAX_CORRHIST / 4, MAX_CORRHIST / 4);
 
-    pawn_correction_history[stm][pawn_key_idx] = (pawn_correction_history[stm][pawn_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
-    non_pawn_correction_history[stm][non_pawn_key_idx] = (non_pawn_correction_history[stm][non_pawn_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
-    minor_correction_history[stm][minors_key_idx] = (minor_correction_history[stm][minors_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
-    major_correction_history[stm][majors_key_idx] = (major_correction_history[stm][majors_key_idx] * (256 - new_weight) + scaled_diff * new_weight) / 256;
-
-    pawn_correction_history[stm][pawn_key_idx] = clamp(pawn_correction_history[stm][pawn_key_idx], -16384, 16384);
-    non_pawn_correction_history[stm][non_pawn_key_idx] = clamp(non_pawn_correction_history[stm][non_pawn_key_idx], -16384, 16384);
-    minor_correction_history[stm][minors_key_idx] = clamp(minor_correction_history[stm][minors_key_idx], -16384, 16384);
-    major_correction_history[stm][majors_key_idx] = clamp(major_correction_history[stm][majors_key_idx], -16384, 16384);
+    // History gravity formula for corrhist
+    pawn_correction_history[stm][pawn_key_idx] += clamped_diff - pawn_correction_history[stm][pawn_key_idx] * abs(clamped_diff) / MAX_CORRHIST;
+    non_pawn_correction_history[stm][non_pawn_key_idx] += clamped_diff - non_pawn_correction_history[stm][non_pawn_key_idx] * abs(clamped_diff) / MAX_CORRHIST;
+    minor_correction_history[stm][minors_key_idx] += clamped_diff - minor_correction_history[stm][minors_key_idx] * abs(clamped_diff) / MAX_CORRHIST;
+    major_correction_history[stm][majors_key_idx] += clamped_diff - major_correction_history[stm][majors_key_idx] * abs(clamped_diff) / MAX_CORRHIST;
 }
 
 // Function to use correction history to adjust static eval
+// Original weights were roughly based on Tarnished (https://github.com/Bobingstern/Tarnished/blob/master/src/search.h#L331)
 int32_t corrhist_adjust_eval(const Board &board, int32_t raw_eval) {
     uint64_t pawn_key = get_pawn_key(board);
     uint64_t non_pawn_key = get_non_pawn_key(board);
@@ -106,7 +105,7 @@ int32_t corrhist_adjust_eval(const Board &board, int32_t raw_eval) {
     int32_t majors_key_idx = majors_key % 16384;
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
-    int32_t entry = pawn_correction_history[stm][pawn_key_idx] + non_pawn_correction_history[stm][non_pawn_key_idx] + minor_correction_history[stm][minors_key_idx] + major_correction_history[stm][majors_key_idx];
+    int32_t correction = 200 * pawn_correction_history[stm][pawn_key_idx] + 160 * non_pawn_correction_history[stm][non_pawn_key_idx] + 150 * minor_correction_history[stm][minors_key_idx] + 140 * major_correction_history[stm][majors_key_idx];
 
-    return clamp(raw_eval + entry / 256, -40000, 40000);
+    return clamp(raw_eval + correction / 2048, -40000, 40000);
 }
