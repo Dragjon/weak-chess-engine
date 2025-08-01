@@ -437,11 +437,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (depth >= 3){
 
             // Basic lmr "loglog" formula
-            reduction += !is_noisy_move && (((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+            if (!is_noisy_move){
+                reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
 
-            // Custom history reductions, reduce if a move's quiet 
-            // history score is very low, scaled by depth
-            reduction += move_history < -history_reduction_depth_mul.current * depth;
+                // Custom history reductions, reduce if a move's quiet 
+                // history score is very low, scaled by depth
+                reduction += move_history < -history_reduction_depth_mul.current * depth;
+            }
 
             // LMR corrplexity - reduce less if we are in a complex 
             // position, determined by the difference between corrected eval
