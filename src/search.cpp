@@ -334,6 +334,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     Move quiets_searched[1024]{};
     int32_t quiets_searched_idx = 0;
 
+    // Keep track of the number of times bestscore was raised
+    // for bestscore complexity lmr
+    int32_t best_raises = 0;
+
     // Clear killers of next ply
     killers[0][ply+1] = Move{}; 
     killers[1][ply+1] = Move{}; 
@@ -447,6 +451,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // position, determined by the difference between corrected eval
             // and raw evaluation
             reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+
+            // Bestscore complexity reductions
+            reduction -= best_raises > (floor(2.0 * log(move_count)) + 2);
         }
 
         int32_t score = 0;
@@ -500,6 +507,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Updating best_score and alpha beta pruning
         if (score > best_score){
             best_score = score;
+            best_raises++;
             current_best_move = current_move;
 
             if (is_root){
