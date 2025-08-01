@@ -434,19 +434,26 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
-        if (!is_noisy_move && depth >= 3){
+        if (depth >= 3){
+            if (!is_noisy_move){
+                // Basic lmr "loglog" formula
+                reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
 
-            // Basic lmr "loglog" formula
-            reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
+                // History reductions - reduce more with bad histories and reduce
+                // less with good histories
+                reduction -= move_history / history_reduction_div.current;
 
-            // History reductions - reduce more with bad histories and reduce
-            // less with good histories
-            reduction -= move_history / history_reduction_div.current;
+                // LMR corrplexity - reduce less if we are in a complex 
+                // position, determined by the difference between corrected eval
+                // and raw evaluation
+                reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+            }
 
-            // LMR corrplexity - reduce less if we are in a complex 
-            // position, determined by the difference between corrected eval
-            // and raw evaluation
-            reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+            // LMR for noisy moves
+            else {
+                // Basic lmr "loglog" formula
+                reduction += (int32_t)((30 / 100) + ((30 * log(depth) * log(move_count)) / 100));
+            }
         }
 
         int32_t score = 0;

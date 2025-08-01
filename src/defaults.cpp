@@ -51,6 +51,7 @@ SearchParam null_move_divisor("NullMoveDivisor", 4, 1, 8, 1);
 
 SearchParam late_move_reduction_base("LateMoveReductionBase", 68, 30, 120, 15);
 SearchParam late_move_reduction_multiplier("LateMoveReductionMultiplier", 50, 10, 70, 7);
+
 SearchParam late_move_reduction_corrplexity("LateMoveReductionCorrplexity", 87, 50, 150, 7);
 
 SearchParam late_move_pruning_base("LateMovePruningBase", 3, 1, 10, 1);
