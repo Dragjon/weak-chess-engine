@@ -552,17 +552,20 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                             // Quiet History Malus
                             if (move_count > 1 && !board.isCapture(current_best_move)){
                                 quiet_history[turn][from][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current;
+                                quiet_history[turn][from][to] = clamp(quiet_history[turn][from][to], -MAX_HISTORY, MAX_HISTORY);
                             }
 
                             // Conthist Malus
                             // 1-ply (Countermoves)
                             if (parent_move_piece != -1 && parent_move_square != -1){
                                 one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current;
+                                one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] = clamp(one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to], -MAX_HISTORY, MAX_HISTORY);
                             }
 
                             // 2-ply (Follow-up moves)
                             if (parent_parent_move_piece != -1 && parent_parent_move_square != -1){
-                                two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current;
+                                two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] -= history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current;
+                                two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] = clamp(two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to], -MAX_HISTORY, MAX_HISTORY);
                             }
                         }
                     }
