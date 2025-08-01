@@ -349,7 +349,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     for (int idx = 0; idx < all_moves.size(); idx++){
 
-        int32_t new_depth = depth;
         int32_t reduction = 0;
         int32_t extension = 0;
         int64_t nodes_b4 = total_nodes;
@@ -424,12 +423,25 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 extension = -1;
         }
 
+        // Adjust new depth
+        int32_t new_depth = depth + extension - 1;
+
         // Static Exchange Evaluation Pruning
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
         if (!pv_node 
             && !see(board, current_move, see_margin) 
             && best_score > -POSITIVE_WIN_SCORE)
             continue;
+
+        int32_t score = 0;
+        bool turn = board.sideToMove() == chess::Color::WHITE;
+        int32_t to = current_move.to().index();
+        int32_t from = current_move.from().index();
+        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+
+        // Basic make and undo functionality. Copy-make should be faster but that
+        // debugging is for later
+        board.makeMove(current_move);
 
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
@@ -443,29 +455,19 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 // Custom history reductions, reduce if a move's quiet 
                 // history score is very low, scaled by depth
                 reduction += move_history < -history_reduction_depth_mul.current * depth;
+
+                // LMR corrplexity - reduce less if we are in a complex 
+                // position, determined by the difference between corrected eval
+                // and raw evaluation
+                reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
             }
 
-            // LMR corrplexity - reduce less if we are in a complex 
-            // position, determined by the difference between corrected eval
-            // and raw evaluation
-            reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+            // Reduce less when our move gives check
+            // This helps mitigate the horizon effect where noisy nodes are 
+            // mistakenly evaluated
+            if (board.inCheck())
+                reduction -= 1;
         }
-
-        int32_t score = 0;
-        bool turn = board.sideToMove() == chess::Color::WHITE;
-        int32_t to = current_move.to().index();
-        int32_t from = current_move.from().index();
-        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
-
-        // Basic make and undo functionality. Copy-make should be faster but that
-        // debugging is for later
-        board.makeMove(current_move);
-
-        // Check extension, we increase the depth of moves that give check
-        // This helps mitigate the horizon effect where noisy nodes are 
-        // mistakenly evaluated
-        if (board.inCheck())
-            extension++;
 
         if (!is_noisy_move) 
             quiets_searched[quiets_searched_idx++] = current_move;
@@ -476,9 +478,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         info.parent_parent_move_square = parent_move_square;
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
-
-        // Adjust new depth
-        new_depth = depth + extension - 1;
 
         // Principle Variation Search
         if (move_count == 1)
