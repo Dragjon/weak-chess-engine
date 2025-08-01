@@ -46,6 +46,7 @@ int32_t seldpeth = 0;
 // Quiescence search. When we are in a noisy position (there are captures), we try to "quiet" the position by
 // going down capture trees using negamax and return the eval when we re in a quiet position
 int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
+
     // Increment node count
     total_nodes++;
     total_nodes_per_search++;
@@ -124,7 +125,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         Move current_move = capture_moves[idx];
 
         // QSEE pruning, if a move is obviously losing, don't search it
-        if (!see_bools[idx]) 
+        if (!see_bools[idx])
             continue;
 
         // Basic make and undo functionality. Copy-make should be faster but that
@@ -427,7 +428,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
         if (!pv_node 
             && !see(board, current_move, see_margin) 
-            && alpha < POSITIVE_WIN_SCORE)
+            && best_score > -POSITIVE_WIN_SCORE)
             continue;
 
         // Quiet late moves reduction - we have to trust that our
@@ -572,9 +573,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
     }
 
-    if (move_count == 0 && search_info.excluded != 0){
+    if (move_count == 0 && search_info.excluded != 0)
         return alpha;
-    }
 
     // Don't store TT in singular searches
     if (search_info.excluded == 0){

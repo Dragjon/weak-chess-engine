@@ -404,7 +404,7 @@ int32_t main(int32_t argc, char* argv[]) {
             int32_t depth = stoi(words[1]);
             SearchInfo info{};
             int32_t score = alpha_beta(board, depth, DEFAULT_ALPHA, DEFAULT_BETA, 0, false, info);
-            cout << "info score cp " << score << "\n";
+            cout << "info depth " << depth << " nodes " << total_nodes << " score cp " << score << "\n";
             cout << "bestmove " << uci::moveToUci(root_best_move) << "\n"; 
         }
 
