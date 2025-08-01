@@ -80,12 +80,17 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // Eval pruning - If a static evaluation of the board will
     // exceed beta, then we can stop the search here. Also, if the static
     // eval exceeds alpha, we can set alpha to our new eval (comment from Ethereal)
-    int32_t eval = evaluate(board);
+    int32_t static_eval = evaluate(board);
 
     // Correct static evaluation with our correction histories
-    eval = corrhist_adjust_eval(board, eval);
+    static_eval = corrhist_adjust_eval(board, static_eval);
 
-    int32_t best_score = eval;
+    // Use TT Score as a better evaluation
+    if (tt_hit 
+        && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= static_eval)  || (entry.type == NodeType::UPPERBOUND && entry.score <= static_eval)))
+        static_eval = entry.score;
+
+    int32_t best_score = static_eval;
     if (best_score >= beta) return best_score;
     if (best_score > alpha) alpha = best_score;
 
@@ -97,8 +102,8 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // is still not enough to cover the distance between alpha and eval, playing a move
     // is futile. Minor boost for pawn captures idea from Ethereal: 
     // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L872
-    if (eval + max(delta_pruning_pawn_bonus.current, move_best_case_value(board)) < alpha)
-        return eval;
+    if (static_eval + max(delta_pruning_pawn_bonus.current, move_best_case_value(board)) < alpha)
+        return static_eval;
 
     // Get all legal moves for our moveloop in our search
     Movelist capture_moves{};
@@ -258,6 +263,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Correct static evaluation with our correction histories
     int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
+
+    // Use TT Score as a better evaluation
+    if (tt_hit 
+        && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= static_eval)  || (entry.type == NodeType::UPPERBOUND && entry.score <= static_eval)))
+        static_eval = entry.score;
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
