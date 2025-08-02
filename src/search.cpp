@@ -461,7 +461,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Check extension, we increase the depth of moves that give check
         // This helps mitigate the horizon effect where noisy nodes are 
         // mistakenly evaluated
-        if (board.inCheck())
+        if (extension == 0 && board.inCheck())
             extension++;
 
         if (!is_noisy_move) 
