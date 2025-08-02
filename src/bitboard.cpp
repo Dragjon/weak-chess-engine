@@ -618,7 +618,6 @@ uint64_t get_threat_key(const Board &board){
             bool is_white = i < 6;
             int32_t j = is_white ? i : i-6;
 
-            chess::Bitboard attacks_bb{};
             switch (j)
             {
                 case 0:
@@ -627,7 +626,7 @@ uint64_t get_threat_key(const Board &board){
 
                 // knights
                 case 1:
-                    attacks_bb = chess::attacks::knight(static_cast<chess::Square>(sq));
+                    attacks |= chess::attacks::knight(static_cast<chess::Square>(sq));
                     break;
                 // bishops
                 case 2:
