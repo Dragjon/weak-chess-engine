@@ -385,11 +385,16 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
-        bool do_singular_search =  !is_root &&  depth >= 6 
-                                    &&  current_move.move() == entry.best_move 
-                                    &&  entry.depth >= depth - 3 
-                                    && (entry.type == NodeType::LOWERBOUND) 
-                                    && search_info.excluded == 0;
+        // https://github.com/mcthouacbb/Sirius/blob/77356f986dd62be7b4d736f70932b44d5a2194e0/Sirius/src/search.cpp#L660
+
+        // Sirius conditions 
+        bool do_singular_search = !is_root && ply < 2 * depth 
+                                    && search_info.excluded == 0 
+                                    && depth >= 6
+                                    && entry.best_move == current_move.move() 
+                                    && entry.depth >= depth - 3
+                                    && entry.type != NodeType::UPPERBOUND 
+                                    && abs(entry.score) < -POSITIVE_WIN_SCORE;
 
         if (do_singular_search)
         {
