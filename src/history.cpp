@@ -86,7 +86,7 @@ void update_correction_history(const Board &board, int32_t depth, int32_t diff) 
     int32_t threat_key_idx = threat_key % 16384;
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
-    int32_t clamped_diff = clamp(diff, -MAX_CORRHIST / 4, MAX_CORRHIST / 4);
+    int32_t clamped_diff = clamp(diff, -MAX_CORRHIST / 5, MAX_CORRHIST / 5);
 
     // History gravity formula for corrhist
     pawn_correction_history[stm][pawn_key_idx] += clamped_diff - pawn_correction_history[stm][pawn_key_idx] * abs(clamped_diff) / MAX_CORRHIST;
