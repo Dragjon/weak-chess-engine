@@ -20,13 +20,6 @@ extern int32_t one_ply_conthist[12][64][12][64];
 extern int32_t two_ply_conthist[12][64][12][64];
 void reset_continuation_history();
 
-// Correction history
-extern const int32_t corrhist_size;
-extern int32_t pawn_correction_history[2][16384];
-extern int32_t non_pawn_correction_history[2][16384];
-extern int32_t minor_correction_history[2][16384];
-extern int32_t major_correction_history[2][16384];
-
 void reset_correction_history();
 int32_t corrhist_adjust_eval(const chess::Board &board, int32_t raw_eval);
 

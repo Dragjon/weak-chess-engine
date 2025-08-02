@@ -592,3 +592,88 @@ uint64_t get_majors_key(const Board &board){
 
     return majors_key;
 }
+
+// Get the non-pawn key for the current position
+uint64_t get_threat_key(const Board &board){
+    uint64_t threat_key = 0ull;
+
+    chess::Bitboard wp = board.pieces(chess::PieceType::PAWN, chess::Color::WHITE);
+    chess::Bitboard wn = board.pieces(chess::PieceType::KNIGHT, chess::Color::WHITE);
+    chess::Bitboard wb = board.pieces(chess::PieceType::BISHOP, chess::Color::WHITE);
+    chess::Bitboard wr = board.pieces(chess::PieceType::ROOK, chess::Color::WHITE);
+    chess::Bitboard wq = board.pieces(chess::PieceType::QUEEN, chess::Color::WHITE);
+    chess::Bitboard wk = board.pieces(chess::PieceType::KING, chess::Color::WHITE);
+    chess::Bitboard bp = board.pieces(chess::PieceType::PAWN, chess::Color::BLACK);
+    chess::Bitboard bn = board.pieces(chess::PieceType::KNIGHT, chess::Color::BLACK);
+    chess::Bitboard bb = board.pieces(chess::PieceType::BISHOP, chess::Color::BLACK);
+    chess::Bitboard br = board.pieces(chess::PieceType::ROOK, chess::Color::BLACK);
+    chess::Bitboard bq = board.pieces(chess::PieceType::QUEEN, chess::Color::BLACK);
+    chess::Bitboard bk = board.pieces(chess::PieceType::KING, chess::Color::BLACK);
+    chess::Bitboard all[] = {wp,wn,wb,wr,wq,wk,bp,bn,bb,br,bq,bk};
+
+    for (int32_t i = 0; i < 12; i++){        
+        chess::Bitboard curr_bb = all[i];
+        while (!curr_bb.empty()) {
+            int32_t sq = curr_bb.pop();
+            bool is_white = i < 6;
+            int32_t j = is_white ? i : i-6;
+
+            chess::Bitboard attacks_bb{};
+            switch (j)
+            {
+                case 0:
+                    attacks_bb = chess::attacks::pawn(is_white ? chess::Color::WHITE : chess::Color::BLACK , static_cast<chess::Square>(sq));
+                    while (attacks_bb){
+                        int32_t sq1 = attacks_bb.pop();
+                        threat_key ^= PAWN_RANDOMS[is_white][sq1];
+                    }
+                    break;
+
+                // knights
+                case 1:
+                    attacks_bb = chess::attacks::knight(static_cast<chess::Square>(sq));
+                    while (attacks_bb){
+                        int32_t sq1 = attacks_bb.pop();
+                        threat_key ^= KNIGHT_RANDOMS[is_white][sq1];
+                    }
+                    break;
+                // bishops
+                case 2:
+                    attacks_bb = chess::attacks::bishop(static_cast<chess::Square>(sq), board.occ());
+                    while (attacks_bb){
+                        int32_t sq1 = attacks_bb.pop();
+                        threat_key ^= BISHOP_RANDOMS[is_white][sq1];
+                    }
+                    break;
+                // rooks
+                case 3:
+                    attacks_bb = chess::attacks::rook(static_cast<chess::Square>(sq), board.occ());
+                    while (attacks_bb){
+                        int32_t sq1 = attacks_bb.pop();
+                        threat_key ^= ROOK_RANDOMS[is_white][sq1];
+                    }
+                    break;
+                // queens
+                case 4:
+                    attacks_bb = chess::attacks::queen(static_cast<chess::Square>(sq), board.occ());
+                    while (attacks_bb){
+                        int32_t sq1 = attacks_bb.pop();
+                        threat_key ^= QUEEN_RANDOMS[is_white][sq1];
+                    }
+                    break;
+                // King 
+                case 5:
+                    attacks_bb = chess::attacks::king(static_cast<chess::Square>(sq));
+                    while (attacks_bb){
+                        int32_t sq1 = attacks_bb.pop();
+                        threat_key ^= KING_RANDOMS[is_white][sq1];
+                    }
+                    break;
+
+            }
+        }
+
+    }
+
+    return threat_key;
+}
