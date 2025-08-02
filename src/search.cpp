@@ -328,6 +328,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // For loop is faster than foreach :)
     Move current_best_move{};
     int32_t move_count = 0;
+    int32_t move_played_count = 0;
 
     // Store quiets searched for history malus
     Move quiets_searched[1024]{};
@@ -457,6 +458,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
         board.makeMove(current_move);
+        move_played_count++;
 
         // Check extension, we increase the depth of moves that give check
         // This helps mitigate the horizon effect where noisy nodes are 
@@ -478,7 +480,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         new_depth = depth + extension - 1;
 
         // Principle Variation Search
-        if (move_count == 1)
+        if (move_played_count == 1)
             score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
         else {
             score = -alpha_beta(board, new_depth - reduction, -alpha - 1, -alpha, ply + 1, true, info);
