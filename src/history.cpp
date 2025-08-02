@@ -114,5 +114,5 @@ int32_t corrhist_adjust_eval(const Board &board, int32_t raw_eval) {
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
     int32_t correction = 200 * pawn_correction_history[stm][pawn_key_idx] + 160 * non_pawn_correction_history[stm][non_pawn_key_idx] + 150 * minor_correction_history[stm][minors_key_idx] + 140 * major_correction_history[stm][majors_key_idx] + 150 * threat_history[stm][threat_key_idx];
 
-    return clamp(raw_eval + correction / 2048, -40000, 40000);
+    return clamp(raw_eval + correction / 2560, -40000, 40000);
 }
