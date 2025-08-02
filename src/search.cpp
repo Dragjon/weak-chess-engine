@@ -446,6 +446,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // position, determined by the difference between corrected eval
             // and raw evaluation
             reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+
+
         }
 
         int32_t score = 0;
@@ -585,8 +587,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             && !(bound == NodeType::LOWERBOUND && best_score <= static_eval) 
             && !(bound == NodeType::UPPERBOUND && best_score >= static_eval)) {
             
-            int32_t corrhist_bonus = clamp(best_score - static_eval, -1024, 1024);
-            update_correction_history(board, depth, corrhist_bonus);
+            update_correction_history(board, depth, best_score - static_eval);
         }
 
         // Storing transpositions
