@@ -209,6 +209,7 @@ int32_t main(int32_t argc, char* argv[]) {
             tt.clear();
             reset_continuation_history();
             reset_correction_history();
+            reset_quiet_history();
         }
 
         // Parse the position command. The position commands comes in a number
@@ -278,9 +279,8 @@ int32_t main(int32_t argc, char* argv[]) {
             int64_t base_time = -1;
             int64_t base_inc = -1;
 
-            // Reset all histories when "go" is given except continuation history.
+            // Reset all histories
             reset_killers();
-            reset_quiet_history();
 
             if (words.size() > 1){
                 if (words[1] == "infinite"){
