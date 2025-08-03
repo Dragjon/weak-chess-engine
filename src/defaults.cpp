@@ -94,3 +94,24 @@ SearchParam soft_tm_ratio("SoftTMRatio", 29, 5, 50, 8);
 SearchParam hard_tm_ratio("HardTMRatio", 1, 1, 20, 4);
 SearchParam node_tm_base("NodeTMBase", 211, 50, 300, 20);
 SearchParam node_tm_mul("NodeTMMul", 113, 50, 300, 20);
+
+SearchParam se_double_ext_margin("SEDoubleExtMargin", 16, 0, 60, 5);
+
+SearchParam correction_divisor("CorrectionDivisor", 2048, 1024, 4096, 64);
+
+SearchParam bm_scale0("BMScale0", 243, 100, 500, 20);
+SearchParam bm_scale1("BMScale1", 135, 50, 300, 20);
+SearchParam bm_scale2("BMScale2", 109, 25, 250, 20);
+SearchParam bm_scale3("BMScale3", 88, 10, 200, 20);
+SearchParam bm_scale4("BMScale4", 68, 0, 150, 20);
+
+SearchParam score_scale0("ScoreScale0", 125, 50, 300, 20);
+SearchParam score_scale1("ScoreScale1", 115, 50, 250, 20);
+SearchParam score_scale2("ScoreScale2", 100, 25, 200, 20);
+SearchParam score_scale3("ScoreScale3", 94, 20, 200, 20);
+SearchParam score_scale4("ScoreScale4", 88, 10, 200, 20);
+
+SearchParam pawn_corrhist_weight("PawnCorrhistWeight", 200, 80, 350, 20);
+SearchParam nonpawn_corrhist_weight("NonPawnCorrhistWeight", 160, 80, 350, 20);
+SearchParam minor_corrhist_weight("MinorCorrhistWeight", 150, 80, 350, 20);
+SearchParam major_corrhist_weight("MajorCorrhistWeight", 140, 70, 350, 20);

@@ -376,6 +376,56 @@ int32_t main(int32_t argc, char* argv[]) {
                 see_piece_values[4] = value;
             }
 
+            else if (option_name == bm_scale0.name){
+                bm_scale0.set(value);
+                best_move_scale[0] = (double)value / 100;
+            }
+
+            else if (option_name == bm_scale1.name){
+                bm_scale1.set(value);
+                best_move_scale[1] = (double)value / 100;
+            }
+
+            else if (option_name == bm_scale2.name){
+                bm_scale2.set(value);
+                best_move_scale[1] = (double)value / 100;
+            }
+
+            else if (option_name == bm_scale3.name){
+                bm_scale3.set(value);
+                best_move_scale[3] = (double)value / 100;
+            }
+
+            else if (option_name == bm_scale4.name){
+                bm_scale4.set(value);
+                best_move_scale[4] = (double)value / 100;
+            }
+
+            else if (option_name == score_scale0.name){
+                score_scale0.set(value);
+                score_scale[0] = (double)value / 100;
+            }
+
+            else if (option_name == score_scale1.name){
+                score_scale1.set(value);
+                score_scale[1] = (double)value / 100;
+            }
+
+            else if (option_name == score_scale2.name){
+                score_scale2.set(value);
+                score_scale[2] = (double)value / 100;
+            }
+
+            else if (option_name == score_scale3.name){
+                score_scale3.set(value);
+                score_scale[3] = (double)value / 100;
+            }
+
+            else if (option_name == score_scale4.name){
+                score_scale4.set(value);
+                score_scale[4] = (double)value / 100;
+            }
+
             // Move Overhead
             // We don't parse "Move Overhead" beacuse our option name
             // extracted is only a single word after "name"

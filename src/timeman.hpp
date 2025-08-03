@@ -31,14 +31,14 @@ inline double frac_best_move_nodes(){
 
 
 // Totally yoinked from Potential
+extern double best_move_scale[5];
 inline double get_bm_scale() {
-    double best_move_scale[5] = {2.43, 1.35, 1.09, 0.88, 0.68};
     return best_move_scale[bm_stability];
 }
 
 // Inspired by Potential's eval stability
+extern double score_scale[5];
 inline double get_score_scale() {
-    double score_scale[5] = {1.25, 1.15, 1.00, 0.94, 0.88};
     return score_scale[score_stability];
 }
 

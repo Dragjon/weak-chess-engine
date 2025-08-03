@@ -405,7 +405,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 extension = 1;
             
                 // Duble extensions
-                if (!pv_node && score < singular_beta - 16)
+                if (!pv_node && score < singular_beta - se_double_ext_margin.current)
                     extension = 2;
             }
 

@@ -3,6 +3,7 @@
 #include "search.hpp"
 #include "history.hpp"
 #include "bitboard.hpp"
+#include "defaults.hpp"
 
 using namespace chess;
 using namespace std;
@@ -65,7 +66,7 @@ void reset_correction_history() {
     }
 }
 
-const int32_t MAX_CORRHIST = 1024;
+int32_t MAX_CORRHIST = 1024;
 
 // Updates all the correction histories given the difference between static eval and score
 // Reference: https://github.com/ProgramciDusunur/Potential/pull/221/commits/ea7701117ca87c9fffaf05330ee7029093150520
@@ -105,7 +106,7 @@ int32_t corrhist_adjust_eval(const Board &board, int32_t raw_eval) {
     int32_t majors_key_idx = majors_key % 16384;
 
     int32_t stm = board.sideToMove() == Color::WHITE ? 0 : 1;
-    int32_t correction = 200 * pawn_correction_history[stm][pawn_key_idx] + 160 * non_pawn_correction_history[stm][non_pawn_key_idx] + 150 * minor_correction_history[stm][minors_key_idx] + 140 * major_correction_history[stm][majors_key_idx];
+    int32_t correction = pawn_corrhist_weight.current * pawn_correction_history[stm][pawn_key_idx] + nonpawn_corrhist_weight.current * non_pawn_correction_history[stm][non_pawn_key_idx] + minor_corrhist_weight.current * minor_correction_history[stm][minors_key_idx] + major_corrhist_weight.current * major_correction_history[stm][majors_key_idx];
 
     return clamp(raw_eval + correction / 2048, -40000, 40000);
 }

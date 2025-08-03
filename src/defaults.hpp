@@ -105,3 +105,21 @@ extern SearchParam soft_tm_ratio;
 extern SearchParam hard_tm_ratio;
 extern SearchParam node_tm_base;
 extern SearchParam node_tm_mul;
+extern SearchParam se_double_ext_margin;
+extern SearchParam correction_divisor;
+extern SearchParam bm_scale0;
+extern SearchParam bm_scale1;
+extern SearchParam bm_scale2;
+extern SearchParam bm_scale3;
+extern SearchParam bm_scale4;
+
+extern SearchParam score_scale0;
+extern SearchParam score_scale1;
+extern SearchParam score_scale2;
+extern SearchParam score_scale3;
+extern SearchParam score_scale4;
+
+extern SearchParam pawn_corrhist_weight;
+extern SearchParam nonpawn_corrhist_weight;
+extern SearchParam minor_corrhist_weight;
+extern SearchParam major_corrhist_weight;
