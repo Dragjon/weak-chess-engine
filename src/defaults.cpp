@@ -60,7 +60,7 @@ SearchParam futility_eval_base("FutilityEvalBase", 104, 50, 200, 15);
 SearchParam futility_depth_mul("FutilityDepthMul", 101, 50, 200, 6);
 
 SearchParam aspiration_window_delta("AspirationWindowDelta", 9, 5, 30, 2);
-SearchParam aspiration_widening_factor("AspirationWideningFactor", 25, 1, 200, 20);
+SearchParam aspiration_widening_factor("AspirationWideningFactor", 3, 1, 200, 20);
 
 SearchParam see_noisy_margin("SeeNoisyMargin", -98, -120, -30, 6);
 SearchParam see_quiet_margin("SeeQuietMargin", -55, -120, -30, 6);
