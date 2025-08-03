@@ -491,6 +491,24 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Research
             if (score > alpha && score < beta) {
                 score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
+
+                // Update continuation history
+                if (!is_noisy_move && (score <= alpha || score >= beta)){
+                    int32_t bonus = score >= beta 
+                            ? min(history_bonus_mul_quad.current * depth * depth + history_bonus_mul_linear.current * depth + history_bonus_base.current, 2048) 
+                            : -min(history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current, 1024);
+
+                    // 1-ply (Countermoves)
+                    if (parent_move_piece != -1 && parent_move_square != -1){
+                        one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] = clamp(one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] + bonus, -MAX_HISTORY, MAX_HISTORY);
+                    }
+
+                    // 2-ply (Follow-up moves)
+                    if (parent_parent_move_piece != -1 && parent_parent_move_square != -1){
+                        two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  = clamp(two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] + bonus, -MAX_HISTORY, MAX_HISTORY);
+                    }
+            
+                }
             }
         }
 
