@@ -151,10 +151,9 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     }
 
     NodeType bound = best_score >= beta ? NodeType::LOWERBOUND : best_score > old_alpha ? NodeType::EXACT : NodeType::UPPERBOUND;
-    uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? entry.best_move : current_best_move.move();
 
     // Storing transpositions
-    tt.store(zobrists_key, best_score, 0, bound, best_move_tt, tt_hit ? entry.tt_was_pv : false);
+    tt.store(zobrists_key, best_score, 0, bound, current_best_move.move(), tt_hit ? entry.tt_was_pv : false);
 
     return best_score;
 }
