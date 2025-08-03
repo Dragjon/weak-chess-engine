@@ -679,7 +679,7 @@ int32_t search_root(Board &board){
                     print_tt_pv(new_board, max(global_depth - 1, 0));
                     cout << endl;
 
-                    beta = min(POSITIVE_INFINITY, alpha + delta);
+                    beta = min(POSITIVE_INFINITY, beta + delta);
                 }
 
                 // Score falls within window (exact)
