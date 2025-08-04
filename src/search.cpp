@@ -366,16 +366,21 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Quiet Move Prunings
         if (!is_root && !is_noisy_move && best_score > -POSITIVE_WIN_SCORE) {
             // Quiet History Pruning
+            // If we are a low depth with a bad history score, prune the branch
             if (depth <= 4 
                 && !in_check 
                 && move_history < depth * depth * -quiet_history_pruning_quad.current) 
                 break;
 
             // Late Move Pruning
+            // Last few quiet moves in the move ordering are probably bad, hence
+            // we prune them.
             if (move_count >= late_move_pruning_base.current + late_move_pruning_quad.current * depth * depth) 
                 continue;
 
             // Futility Pruning
+            // When the static evaluation of the position is so bad that it has almost 
+            // no potential to raise alpha, we can prunt the quiet move
             if (depth <= 4 
                 && !pv_node 
                 && !in_check 
@@ -384,8 +389,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
 
         // Singular extensions
+        // When we have a tt-hit and a tt move, we can use SE to test for "singularity"
+        // We do this by excluding the tt move from further searches. If alpha does
+        // does not get raised in the subsequent search, we know that the tt move
+        // is indeed singular and we should extend it.
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
-        bool do_singular_search =  !is_root &&  depth >= 6 
+        bool do_singular_search =  !is_root 
+                                    &&  depth >= 6 
                                     &&  current_move.move() == entry.best_move 
                                     &&  entry.depth >= depth - 3 
                                     && (entry.type == NodeType::LOWERBOUND) 
@@ -402,6 +412,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, se_info); 
 
             if (score < singular_beta){
+                // Single extensions
                 extension = 1;
             
                 // Duble extensions
