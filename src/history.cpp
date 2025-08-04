@@ -12,7 +12,7 @@ Move killers[2][MAX_SEARCH_PLY+1]{};
 int32_t quiet_history[2][64][64]{};
 int32_t one_ply_conthist[12][64][12][64]{};
 int32_t two_ply_conthist[12][64][12][64]{};
-int32_t capthist[12][64][12]{};
+int32_t capthist[12][64][13]{};
 
 // Correction history :-)
 // [0] -> white, [1] -> black for consistency
@@ -44,7 +44,7 @@ void reset_quiet_history() {
 void reset_capture_history() {
     for (int32_t piece = 0; piece < 12; ++piece) {
         for (int32_t to = 0; to < 64; ++to) {
-            for (int32_t captured = 0; captured < 12; ++captured) {
+            for (int32_t captured = 0; captured < 13; ++captured) {
                 capthist[piece][to][captured] = 0;
             }
         }

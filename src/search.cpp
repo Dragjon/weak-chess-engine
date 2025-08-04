@@ -557,9 +557,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                             move_piece = static_cast<int32_t>(board.at(quiet.from()).internal());
 
                             // Quiet History Malus
-                            if (!board.isCapture(current_best_move)){
-                                quiet_history[turn][from][to] = clamp(quiet_history[turn][from][to] - malus, -MAX_HISTORY, MAX_HISTORY);
-                            }
+                            quiet_history[turn][from][to] = clamp(quiet_history[turn][from][to] - malus, -MAX_HISTORY, MAX_HISTORY);
 
                             // Conthist Malus
                             // 1-ply (Countermoves)
@@ -575,21 +573,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                     }
 
                     // Capture move heuristics
-                    else {
-                        // Capture history update
-                        int32_t bonus = min(history_bonus_mul_quad.current * depth * depth + history_bonus_mul_linear.current * depth + history_bonus_base.current, 2048);
-                        capthist[move_piece][to][captured] += bonus - capthist[move_piece][to][captured] * abs(bonus) / MAX_HISTORY;
+                    // Capture history update
+                    int32_t bonus = min(history_bonus_mul_quad.current * depth * depth + history_bonus_mul_linear.current * depth + history_bonus_base.current, 2048);
+                    capthist[move_piece][to][captured] += bonus - capthist[move_piece][to][captured] * abs(bonus) / MAX_HISTORY;
 
-                        // All Capture History Malus
-                        int32_t malus = min(history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current, 1024);
-                        for (int32_t i = 0; i < captures_searched_idx - 1; i++){
-                            Move capture = captures_searched[i];
-                            to = capture.to().index();
-                            move_piece = static_cast<int32_t>(board.at(capture.from()).internal());
-                            captured = static_cast<int32_t>(board.at(capture.to()).internal());
-                            capthist[move_piece][to][captured] = clamp(capthist[move_piece][to][captured] - malus, -MAX_HISTORY, MAX_HISTORY);
-                        }
-
+                    // All Capture History Malus
+                    int32_t malus = min(history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current, 1024);
+                    for (int32_t i = 0; i < captures_searched_idx - 1; i++){
+                        Move capture = captures_searched[i];
+                        to = capture.to().index();
+                        move_piece = static_cast<int32_t>(board.at(capture.from()).internal());
+                        captured = static_cast<int32_t>(board.at(capture.to()).internal());
+                        capthist[move_piece][to][captured] = clamp(capthist[move_piece][to][captured] - malus, -MAX_HISTORY, MAX_HISTORY);
                     }
 
                     break;

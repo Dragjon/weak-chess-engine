@@ -21,7 +21,7 @@ extern int32_t two_ply_conthist[12][64][12][64];
 void reset_continuation_history();
 
 // Capture history [piece][to][captured]
-extern int32_t capthist[12][64][12];
+extern int32_t capthist[12][64][13];
 void reset_capture_history();
 
 // Correction history
