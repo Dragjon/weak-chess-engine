@@ -42,7 +42,7 @@ void sort_moves(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move,
         if (tt_hit && move.move() == tt_move) {
             score = TT_BONUS;
         } else if (board.isCapture(move)) {
-            score = mvv(board, move) + capthist[move_piece][to][captured];
+            score = mvv_lva(board, move) + capthist[move_piece][to][captured];
             score += see(board, move, 0) ? 0 : -10000000;
         } else if (killers[0][ply] == move || killers[1][ply] == move) {
             score = KILLER_BONUS;
@@ -85,7 +85,7 @@ std::array<bool, MAX_MOVES> sort_captures(Board& board, Movelist& movelist, bool
         bool good_see = see(board, move, 0);
         int32_t score = tt_hit && move.move() == tt_move
                         ? TT_BONUS
-                        : mvv(board, move) + (good_see ? 0 : -10000000) + capthist[move_piece][to][captured];
+                        : mvv_lva(board, move) + (good_see ? 0 : -10000000) + capthist[move_piece][to][captured];
 
         scored_moves[i] = std::make_tuple(score, good_see, move);
     }
