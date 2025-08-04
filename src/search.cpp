@@ -269,7 +269,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         && !tt_was_pv 
         && !in_check 
         && depth <= 8 
-        && static_eval - (improving ? 20 : 55) * depth >= beta 
+        && static_eval - (improving ? 35 : 55) * depth >= beta 
         && search_info.excluded == 0){
         return (static_eval + beta) / 2;
     }
