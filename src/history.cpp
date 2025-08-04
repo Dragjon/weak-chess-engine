@@ -29,12 +29,23 @@ void reset_killers(){
 }
 
 
-// Reset quiet histiry
+// Reset quiet history
 void reset_quiet_history() {
     for (int32_t color = 0; color < 2; ++color) {
         for (int32_t piece = 0; piece < 64; ++piece) {
             for (int32_t square = 0; square < 64; ++square) {
                 quiet_history[color][piece][square] = 0;
+            }
+        }
+    }
+}
+
+// Reset capture history
+void reset_capture_history() {
+    for (int32_t piece = 0; piece < 12; ++piece) {
+        for (int32_t to = 0; to < 64; ++to) {
+            for (int32_t captured = 0; captured < 12; ++captured) {
+                capthist[piece][to][captured] = 0;
             }
         }
     }

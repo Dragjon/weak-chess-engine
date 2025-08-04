@@ -210,6 +210,7 @@ int32_t main(int32_t argc, char* argv[]) {
             reset_continuation_history();
             reset_correction_history();
             reset_quiet_history();
+            reset_capture_history();
         }
 
         // Parse the position command. The position commands comes in a number

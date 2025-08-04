@@ -22,6 +22,7 @@ void reset_continuation_history();
 
 // Capture history [piece][to][captured]
 extern int32_t capthist[12][64][12];
+void reset_capture_history();
 
 // Correction history
 extern const int32_t corrhist_size;
