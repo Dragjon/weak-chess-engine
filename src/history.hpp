@@ -20,6 +20,9 @@ extern int32_t one_ply_conthist[12][64][12][64];
 extern int32_t two_ply_conthist[12][64][12][64];
 void reset_continuation_history();
 
+// Capture history [piece][to][captured]
+extern int32_t capthist[12][64][12];
+
 // Correction history
 extern const int32_t corrhist_size;
 extern int32_t pawn_correction_history[2][16384];

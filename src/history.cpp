@@ -12,6 +12,7 @@ Move killers[2][MAX_SEARCH_PLY+1]{};
 int32_t quiet_history[2][64][64]{};
 int32_t one_ply_conthist[12][64][12][64]{};
 int32_t two_ply_conthist[12][64][12][64]{};
+int32_t capthist[12][64][12]{};
 
 // Correction history :-)
 // [0] -> white, [1] -> black for consistency

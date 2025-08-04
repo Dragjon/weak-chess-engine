@@ -333,6 +333,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     Move quiets_searched[1024]{};
     int32_t quiets_searched_idx = 0;
 
+    // Store captures searched for history malus
+    Move captures_searched[1024]{};
+    int32_t captures_searched_idx = 0;
+
     // Clear killers of next ply
     killers[0][ply+1] = Move{}; 
     killers[1][ply+1] = Move{}; 
@@ -453,6 +457,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t to = current_move.to().index();
         int32_t from = current_move.from().index();
         int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+        int32_t captured = static_cast<int32_t>(board.at(current_move.to()).internal());
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
@@ -466,6 +471,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         if (!is_noisy_move) 
             quiets_searched[quiets_searched_idx++] = current_move;
+        else
+            captures_searched[captures_searched_idx++] = current_move;
 
         // To update continuation history
         SearchInfo info{};
@@ -530,7 +537,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                         int32_t bonus = min(history_bonus_mul_quad.current * depth * depth + history_bonus_mul_linear.current * depth + history_bonus_base.current, 2048);
                         quiet_history[turn][from][to] += bonus - quiet_history[turn][from][to] * abs(bonus) / MAX_HISTORY;
 
-                        // Continuation History Update
+                        // Continuation history update
                         // 1-ply (Countermoves)
                         if (parent_move_piece != -1 && parent_move_square != -1){
                             one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] += bonus - one_ply_conthist[parent_move_piece][parent_move_square][move_piece][to] * abs(bonus) / MAX_HISTORY;
@@ -565,6 +572,24 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                                 two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to]  = clamp(two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][move_piece][to] - malus, -MAX_HISTORY, MAX_HISTORY);
                             }
                         }
+                    }
+
+                    // Capture move heuristics
+                    else {
+                        // Capture history update
+                        int32_t bonus = min(history_bonus_mul_quad.current * depth * depth + history_bonus_mul_linear.current * depth + history_bonus_base.current, 2048);
+                        capthist[move_piece][to][captured] += bonus - capthist[move_piece][to][captured] * abs(bonus) / MAX_HISTORY;
+
+                        // All Capture History Malus
+                        int32_t malus = min(history_malus_mul_quad.current * depth * depth + history_malus_mul_linear.current * depth + history_malus_base.current, 1024);
+                        for (int32_t i = 0; i < captures_searched_idx - 1; i++){
+                            Move capture = captures_searched[i];
+                            to = capture.to().index();
+                            move_piece = static_cast<int32_t>(board.at(capture.from()).internal());
+                            captured = static_cast<int32_t>(board.at(capture.to()).internal());
+                            capthist[move_piece][to][captured] = clamp(capthist[move_piece][to][captured] - malus, -MAX_HISTORY, MAX_HISTORY);
+                        }
+
                     }
 
                     break;
