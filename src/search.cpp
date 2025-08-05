@@ -448,8 +448,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // and raw evaluation
             reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
 
-            // Reduce less when in check
-            reduction += in_check;
         }
 
         int32_t score = 0;
@@ -461,12 +459,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
         board.makeMove(current_move);
-
-        // Check extension, we increase the depth of moves that give check
-        // This helps mitigate the horizon effect where noisy nodes are 
-        // mistakenly evaluated
-        if (extension == 0 && board.inCheck())
-            extension++;
 
         if (!is_noisy_move) 
             quiets_searched[quiets_searched_idx++] = current_move;
