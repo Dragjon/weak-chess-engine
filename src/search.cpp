@@ -138,11 +138,12 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         // Updating best_score and alpha beta pruning
         if (score > best_score){
             best_score = score;
-            current_best_move = current_move;
 
             // Update alpha
-            if (score > alpha)
+            if (score > alpha){
                 alpha = score;
+                current_best_move = current_move;
+            }
 
             // Alpha-Beta Pruning
             if (score >= beta)
@@ -499,19 +500,20 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Updating best_score and alpha beta pruning
         if (score > best_score){
             best_score = score;
-            current_best_move = current_move;
-
-            if (is_root){
-                root_best_move = current_move;
-
-                // Node time management, we get total number of nodes spent searching on best move
-                // and scale our tm based on it
-                best_move_nodes = total_nodes - nodes_b4;
-            }
 
             // Update alpha
             if (score > alpha){
                 alpha = score;
+            
+                current_best_move = current_move;
+
+                if (is_root){
+                    root_best_move = current_move;
+
+                    // Node time management, we get total number of nodes spent searching on best move
+                    // and scale our tm based on it
+                    best_move_nodes = total_nodes - nodes_b4;
+                }
 
                 // Alpha-Beta Pruning
                 if (score >= beta){
