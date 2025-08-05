@@ -501,19 +501,19 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (score > best_score){
             best_score = score;
 
+            // Node time management, we get total number of nodes spent searching on best move
+            // and scale our tm based on it
+            if (is_root)
+                best_move_nodes = total_nodes - nodes_b4;
+
             // Update alpha
             if (score > alpha){
                 alpha = score;
             
                 current_best_move = current_move;
 
-                if (is_root){
+                if (is_root)
                     root_best_move = current_move;
-
-                    // Node time management, we get total number of nodes spent searching on best move
-                    // and scale our tm based on it
-                    best_move_nodes = total_nodes - nodes_b4;
-                }
 
                 // Alpha-Beta Pruning
                 if (score >= beta){
