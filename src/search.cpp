@@ -141,12 +141,13 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
             current_best_move = current_move;
 
             // Update alpha
-            if (score > alpha)
+            if (score > alpha){
                 alpha = score;
 
-            // Alpha-Beta Pruning
-            if (score >= beta)
-                break;
+                // Alpha-Beta Pruning
+                if (alpha >= beta)
+                    break;
+            }
         }
     }
 
@@ -514,7 +515,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 alpha = score;
 
                 // Alpha-Beta Pruning
-                if (score >= beta){
+                if (alpha >= beta){
 
                     // Quiet move heuristics
                     if (!is_noisy_move){
