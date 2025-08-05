@@ -53,7 +53,7 @@ inline void print_open_bench_config()
 {
     for (const auto& param : all_params)
     {
-        if (param->name == "Threads" || param->name == "Hash")
+        if (param->name == "Threads" || param->name == "Hash" || param->name == "MoveOverhead")
             continue;
 
         std::cout << param->name << ", int, "

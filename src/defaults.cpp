@@ -3,7 +3,7 @@
 // Basics
 SearchParam tt_size("Hash", 64, 1, 16384, 1);
 SearchParam threads("Threads", 1, 1, 1, 1);
-SearchParam move_overhead("Move Overhead", 0, 0, 10000, 1);
+SearchParam move_overhead("MoveOverhead", 0, 0, 10000, 1);
 
 // SPSA (https://chess.n9x.co/tune/3573/)
 /*
