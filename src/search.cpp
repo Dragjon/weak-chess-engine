@@ -485,6 +485,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Similar concept to futility pruning but we can be more aggressive
             // STC: 8.66 +- 5.65
             reduction += static_eval + 50 + 50 * depth <= alpha;
+
+            // Reduce less if tt was a pv node
+            reduction -= tt_was_pv;
         }
 
         int32_t score = 0;
