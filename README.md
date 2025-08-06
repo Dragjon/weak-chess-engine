@@ -122,7 +122,7 @@ Or configure it in a GUI like **CuteChess** or **Arena**.
 * `seval` - Prints the current static evaluation
 * `search <depth>` - Searches to a specified depth and prints search info
 * `time` - Prints the current time management info
-* `see <move>` - Prints the SEE bolean for that move
+* `see <move>` - Prints the SEE boolean for that move
 * `obpasta` - Prints OpenBench SPSA Config
 
 ---
@@ -130,7 +130,7 @@ Or configure it in a GUI like **CuteChess** or **Arena**.
 ## UCI Options
 * `Hash` - The transposition hash
 * `Threads` - Number of threads to run on.
-* `Move Overhead` - Number of ms to reduce from the time given due to communication overhead.
+* `MoveOverhead` - Number of ms to reduce from the time given due to communication overhead.
 
 ---
 
