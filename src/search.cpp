@@ -451,9 +451,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce more when in check
             // Ultra scaler somehow
             // STC: 3.86 +- 3.10
-            // LTC:  16.23 +- 8.89
+            // LTC: 16.23 +- 8.89
             reduction += in_check;
 
+            // LMR Futility
+            // Similar concept to futility pruning but we can be more aggressive
+            reduction += static_eval + 50 + 50 * depth <= alpha;
         }
 
         int32_t score = 0;
