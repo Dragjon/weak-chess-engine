@@ -189,10 +189,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // For updating Transposition table later
     int32_t old_alpha = alpha;  
 
-    // Increment node count
-    total_nodes++;
-    total_nodes_per_search++;
-
     // Handle time management
     // Here is where our hard-bound time mnagement is. When the search time 
     // exceeds our maximum hard bound time limit
@@ -240,6 +236,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (depth <= 0){
         return q_search(board, alpha, beta, ply);
     }
+
+    // Increment node count
+    total_nodes++;
+    total_nodes_per_search++;
 
     // Get the TT Entry for current position
     TTEntry entry{};
