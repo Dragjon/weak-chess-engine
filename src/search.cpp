@@ -97,6 +97,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // is still not enough to cover the distance between alpha and eval, playing a move
     // is futile. Minor boost for pawn captures idea from Ethereal: 
     // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L872
+    // STC: 14.58 +- 10.13 
     if (eval + max(delta_pruning_pawn_bonus.current, move_best_case_value(board)) < alpha)
         return eval;
 
@@ -119,12 +120,14 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     for (int idx = 0; idx < capture_moves.size(); idx++){
 
         // QSearch movecount pruning
+        // STC: 25.78 +- 14.91
         if (!board.inCheck() && moves_played >= 2)
             break;
 
         Move current_move = capture_moves[idx];
 
         // QSEE pruning, if a move is obviously losing, don't search it
+        // STC: 179.35 +/- 31.54
         if (!see_bools[idx])
             continue;
 
@@ -257,6 +260,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     int32_t raw_eval = evaluate(board);
 
     // Correct static evaluation with our correction histories
+    // STC: 20.87 +- 9.48 (pawn)
+    // STC: 3.49 +- 2.77 (non pawn)
+    // STC: 9.93 +- 6.18 (minor)
+    // STC: 15.42 +- 7.84 (major)
     int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
@@ -266,6 +273,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
+    // STC: 132.85 +/- 26.94
     if (!pv_node 
         && !tt_was_pv 
         && !in_check 
@@ -280,6 +288,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // with depth is still not able to raise alpha, we can be almost sure 
     // that it will not be able to in the next few depths
     // https://github.com/official-stockfish/Stockfish/blob/ce73441f2013e0b8fd3eb7a0c9fd391d52adde70/src/search.cpp#L833
+    // STC: 6.34 +/- 4.77
     if (!pv_node 
         && !in_check 
         && depth <= 3 
@@ -293,6 +302,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // except if it's in a zugzwang. Hence, if we skip out turn and
     // we still maintain beta, then we can prune early. Also do not
     // do NMP when tt suggests that it should fail immediately
+    // STC: 83.93 +/- 19.67
+    // STC: 5.83 +- 5.85 (dynamic)
     if (!pv_node 
         && !in_check 
         && static_eval >= beta 
@@ -318,6 +329,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
     // that are high enough up in the search tree that we would expect to find a transposition
     // to use later. (Comment from Ethereal)
+    // STC: 10.02 +/- 6.36
+    // STC: 9.64 +- 7.56 (cutnode)
+    // STC: 7.27 +- 5.64 (patch)
     if ((pv_node || cut_node) 
         && !in_check 
         && depth >= 7 
@@ -339,12 +353,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     killers[1][ply+1] = Move{}; 
 
     // Move orderings
-    // 1st TT Move
-    // 2nd MVV-LVA (captures)
-    // 3rd Killers Moves (quiets)
-    // 4th Histories (quiets)
-    //      - 1 ply conthist (countermoves)
-    //      - 2 ply conthist (follow-up moves)
+    // 1st TT Move (STC: 354.04 +/- 42.86)
+    // 2nd MVV-LVA (STC: 109.50 +/- 25.18 (Note this is when mvv-lva was buggy)) + SEE (STC: 24.53 +- 14.42)
+    // 3rd Killers Moves (quiets) (STC: 29.88 +/- 10.55) and (STC: 10.77 +/- 6.38) for two killers
+    // 4th Histories (quiets) (STC: 41.16 +/- 13.63)
+    //      - 1 ply conthist (countermoves) (STC: 31.45 +- 16.47)
+    //      - 2 ply conthist (follow-up moves) (STC: 6.57 +- 5.04)
     sort_moves(board, all_moves, tt_hit, entry.best_move, ply, search_info);
 
     for (int idx = 0; idx < all_moves.size(); idx++){
@@ -367,16 +381,19 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Quiet Move Prunings
         if (!is_root && !is_noisy_move && best_score > -POSITIVE_WIN_SCORE) {
             // Quiet History Pruning
+            // STC: 24.29 +- 10.37
             if (depth <= 4 
                 && !in_check 
                 && move_history < depth * depth * -quiet_history_pruning_quad.current) 
                 break;
 
             // Late Move Pruning
+            // STC: 33.58 +- 16.99
             if (move_count >= late_move_pruning_base.current + late_move_pruning_quad.current * depth * depth) 
                 continue;
 
             // Futility Pruning
+            // STC: 14.92 +- 10.00
             if (depth <= 4 
                 && !pv_node 
                 && !in_check 
@@ -386,6 +403,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Singular extensions
         // https://github.com/AndyGrant/Ethereal/blob/0e47e9b67f345c75eb965d9fb3e2493b6a11d09a/src/search.c#L1022
+        // STC: 16.12 +- 10.90 (singular extensions)
+        // STC: 6.67 +- 5.34 (multi-cut)
+        // STC: 5.73 +- 4.23 (negative-extensions)
+        // STC: 8.62 +- 5.57 (double extent) 
         bool do_singular_search =  !is_root &&  depth >= 6 
                                     &&  current_move.move() == entry.best_move 
                                     &&  entry.depth >= depth - 3 
@@ -425,6 +446,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
 
         // Static Exchange Evaluation Pruning
+        // STC: 43.06 +/- 14.89
         int32_t see_margin = !is_noisy_move ? depth * see_quiet_margin.current : depth * see_noisy_margin.current;
         if (!pv_node 
             && !see(board, current_move, see_margin) 
@@ -437,15 +459,20 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (!is_noisy_move && depth >= 3){
 
             // Basic lmr "loglog" formula
+            // STC: 35.76 +/- 12.65
             reduction += (int32_t)(((double)late_move_reduction_base.current / 100) + (((double)late_move_reduction_multiplier.current * log(depth) * log(move_count)) / 100));
 
             // History reductions - reduce more with bad histories and reduce
             // less with good histories
+            // STC: 14.67 +- 7.79 (1st implementation)
+            // STC: 16.36 +- 8.30 (2nd implementation)
+            // Total STC Elo: ~31 elo
             reduction -= move_history / history_reduction_div.current;
 
             // LMR corrplexity - reduce less if we are in a complex 
             // position, determined by the difference between corrected eval
             // and raw evaluation
+            // STC: 9.63 +- 6.01
             reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
 
             // Reduce more when in check
@@ -456,6 +483,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             // LMR Futility
             // Similar concept to futility pruning but we can be more aggressive
+            // STC: 8.66 +- 5.65
             reduction += static_eval + 50 + 50 * depth <= alpha;
         }
 
@@ -472,6 +500,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Check extension, we increase the depth of moves that give check
         // This helps mitigate the horizon effect where noisy nodes are 
         // mistakenly evaluated
+        // STC: 19.66 +/- 8.51,
         if (extension == 0 && board.inCheck())
             extension++;
 
@@ -489,6 +518,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         new_depth = depth + extension - 1;
 
         // Principle Variation Search
+        // STC: 54.25 +/- 15.03
+        // STC: 27.39 +/- 11.81 (Triple PVS)
         if (move_count == 1)
             score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
         else {
@@ -561,6 +592,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                             move_piece = static_cast<int32_t>(board.at(quiet.from()).internal());
 
                             // Quiet History Malus
+                            // STC: 35.24 +/- 13.39
                             if (!board.isCapture(current_best_move)){
                                 quiet_history[turn][from][to] = clamp(quiet_history[turn][from][to] - malus, -MAX_HISTORY, MAX_HISTORY);
                             }
@@ -643,6 +675,9 @@ int32_t search_root(Board &board){
     try {
         // Aspiration window search, we predict that the score from previous searches will be
         // around the same as the next depth +/- some margin.
+        // STC: 40.83 +/- 13.86
+        // STC: 7.34 +/- 5.30 (bugfix 1)
+        // STC:  12.94 +- 7.19 (bugfix 2)
         int32_t score = 0;
         int32_t delta = aspiration_window_delta.current;
         int32_t alpha = DEFAULT_ALPHA;
