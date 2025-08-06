@@ -456,8 +456,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             // LMR Futility
             // Similar concept to futility pruning but we can be more aggressive
-            // https://github.com/kelseyde/calvin-chess-engine/blob/3417cd968e1aa42ff13d045fd47f86fac1c8ee33/src/main/java/com/kelseyde/calvin/search/Searcher.java#L988
-            reduction += static_eval + 101 + 80 * depth <= alpha; 
+            reduction += static_eval + 50 + 50 * depth <= alpha;
         }
 
         int32_t score = 0;
