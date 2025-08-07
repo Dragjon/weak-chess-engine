@@ -43,9 +43,9 @@ int64_t total_nodes = 0;
 int32_t seldpeth = 0;
 
 // Fail-high count for lmr [ply]
-// Since we reset failhaigh count of ply+2, and out max ply is 255,
-// we must have 256 + 2 = 258 elements
-int32_t fail_high_count[258]{};
+// Since we reset failhaigh count of ply+1, and our max ply is 255,
+// we must have 256 + 1 = 257 elements
+int32_t fail_high_count[257]{};
 
 // Quiescence search. When we are in a noisy position (there are captures), we try to "quiet" the position by
 // going down capture trees using negamax and return the eval when we re in a quiet position
