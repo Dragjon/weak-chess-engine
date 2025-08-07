@@ -486,8 +486,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // STC: 8.66 +- 5.65
             reduction += static_eval + 50 + 50 * depth <= alpha;
 
-            // Reduce more when node is a cutnode
-            reduction += 2 * cut_node;
+            // Reduce less when node is a cutnode
+            reduction -= cut_node;
         }
 
         int32_t score = 0;
