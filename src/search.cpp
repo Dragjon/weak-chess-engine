@@ -42,11 +42,6 @@ int64_t total_nodes = 0;
 // Highest searched depth
 int32_t seldpeth = 0;
 
-// Fail-high count for lmr [ply]
-// Since we reset failhaigh count of ply+1, and our max ply is 255,
-// we must have 256 + 1 = 257 elements
-int32_t fail_high_count[257]{};
-
 // Quiescence search. When we are in a noisy position (there are captures), we try to "quiet" the position by
 // going down capture trees using negamax and return the eval when we re in a quiet position
 int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
@@ -244,9 +239,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (depth <= 0){
         return q_search(board, alpha, beta, ply);
     }
-
-    // Reset fail-high count for next ply
-    fail_high_count[ply + 1] = 0;
 
     // Get the TT Entry for current position
     TTEntry entry{};
@@ -493,10 +485,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // STC: 8.66 +- 5.65
             reduction += static_eval + 50 + 50 * depth <= alpha;
 
-            // Fail-High LMR
-            // Reduce more if this branch is known to fail high
-            // STC: 5.41 +- 4.10
-            reduction += !is_root && fail_high_count[ply + 1] > 2;
+            // Reduce more for non-root nodes
+            reduction += !is_root;
         }
 
         int32_t score = 0;
@@ -569,9 +559,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
                 // Alpha-Beta Pruning
                 if (alpha >= beta){
-
-                    // Update fail-high count
-                    fail_high_count[ply]++;
 
                     // Quiet move heuristics
                     if (!is_noisy_move){
