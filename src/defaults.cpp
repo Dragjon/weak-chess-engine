@@ -65,7 +65,7 @@ SearchParam aspiration_widening_factor("AspirationWideningFactor", 25, 1, 200, 2
 SearchParam see_noisy_margin("SeeNoisyMargin", -98, -120, -30, 6);
 SearchParam see_quiet_margin("SeeQuietMargin", -55, -120, -30, 6);
 
-SearchParam quiet_history_pruning_quad("QuietHistoryPruningQuad", 2004, 786, 8192, 64);
+SearchParam quiet_history_pruning_quad("QuietHistoryPruningQuad", 3000, 786, 8192, 64);
 
 SearchParam history_bonus_base("HistoryBonusBase", 94, -384, 768, 64);
 SearchParam history_bonus_mul_linear("HistoryBonusMulLinear", 219, 64, 384, 32);
