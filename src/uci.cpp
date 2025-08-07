@@ -279,7 +279,7 @@ int32_t main(int32_t argc, char* argv[]) {
             int64_t base_time = -1;
             int64_t base_inc = -1;
 
-            // Reset all histories
+            // Reset all histories & lmr failhigh
             reset_killers();
 
             if (words.size() > 1){
