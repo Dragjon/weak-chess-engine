@@ -109,11 +109,9 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     Movelist capture_moves{};
     movegen::legalmoves<movegen::MoveGenType::CAPTURE>(capture_moves, board);
 
-    std::array<bool, 256> see_bools{};
-
     // Move ordering
     if (capture_moves.size() != 0) { 
-        see_bools = sort_captures(board, capture_moves, tt_hit, entry.best_move);
+        sort_captures_lazy(board, capture_moves, tt_hit, entry.best_move, ply);
     }
 
     // Qsearch pruning stuff
@@ -128,11 +126,11 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         if (!board.inCheck() && moves_played >= 2)
             break;
 
-        Move current_move = capture_moves[idx];
+        Move current_move = get_next_capture(ply);
 
         // QSEE pruning, if a move is obviously losing, don't search it
         // STC: 179.35 +/- 31.54
-        if (!see_bools[idx])
+        if (!see(board, current_move, 0))
             continue;
 
         // Basic make and undo functionality. Copy-make should be faster but that
@@ -366,7 +364,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // 4th Histories (quiets) (STC: 41.16 +/- 13.63)
     //      - 1 ply conthist (countermoves) (STC: 31.45 +- 16.47)
     //      - 2 ply conthist (follow-up moves) (STC: 6.57 +- 5.04)
-    sort_moves(board, all_moves, tt_hit, entry.best_move, ply, search_info);
+    sort_moves_lazy(board, all_moves, tt_hit, entry.best_move, ply, search_info);
 
     for (int idx = 0; idx < all_moves.size(); idx++){
 
@@ -375,7 +373,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t extension = 0;
         int64_t nodes_b4 = total_nodes;
 
-        Move current_move = all_moves[idx];
+        Move current_move = get_next_move(ply);
 
         // Skip excluded singular moves
         if (current_move.move() == search_info.excluded)

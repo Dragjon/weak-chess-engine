@@ -17,21 +17,32 @@ using namespace chess;
 constexpr int32_t TT_BONUS = 1000000;
 constexpr int32_t KILLER_BONUS = 90000;
 constexpr size_t MAX_MOVES = 256;
+constexpr size_t MAX_PLY   = 255;
 
-// Main search sorting
-void sort_moves(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move, int32_t ply, SearchInfo search_info) {
+/****************************************
+*             SEARCH SORTING            *
+*****************************************/
+
+// Now per-ply storage
+static std::array<std::array<std::pair<int32_t, Move>, MAX_MOVES>, MAX_PLY+1> g_scored_moves;
+static std::array<size_t, MAX_PLY+1> g_move_count{};
+static std::array<std::array<bool, 65536>, MAX_PLY+1> g_move_used{};
+
+// Score moves without sorting — sets up per-ply scored move list
+void sort_moves_lazy(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move, int32_t ply, SearchInfo search_info)
+{
+    // Clear used flags for this ply only
+    std::fill(std::begin(g_move_used[ply]), std::end(g_move_used[ply]), false);
+
+    g_move_count[ply] = movelist.size();
+    assert(g_move_count[ply] <= MAX_MOVES);
 
     int32_t parent_move_piece = search_info.parent_move_piece;
     int32_t parent_move_square = search_info.parent_move_square;
     int32_t parent_parent_move_piece = search_info.parent_parent_move_piece;
     int32_t parent_parent_move_square = search_info.parent_parent_move_square;
 
-    const size_t move_count = movelist.size();
-    assert(move_count <= MAX_MOVES);
-
-    std::array<std::pair<int32_t, Move>, MAX_MOVES> scored_moves;
-
-    for (size_t i = 0; i < move_count; i++) {
+    for (size_t i = 0; i < g_move_count[ply]; i++) {
         const auto& move = movelist[i];
         int32_t score = 0;
 
@@ -46,51 +57,96 @@ void sort_moves(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move,
             score = quiet_history[board.sideToMove() == Color::WHITE][move.from().index()][move.to().index()];
 
             if (parent_move_piece != -1 && parent_move_square != -1)
-                score += one_ply_conthist[parent_move_piece][parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
+                score += one_ply_conthist[parent_move_piece][parent_move_square]
+                         [static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
 
             if (parent_parent_move_piece != -1 && parent_parent_move_square != -1)
-                score += two_ply_conthist[parent_parent_move_piece][parent_parent_move_square][static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
+                score += two_ply_conthist[parent_parent_move_piece][parent_parent_move_square]
+                         [static_cast<int32_t>(board.at(move.from()).internal())][move.to().index()];
         }
 
-        scored_moves[i] = std::make_pair(score, move);
-    }
-
-    std::stable_sort(scored_moves.begin(), scored_moves.begin() + move_count, [](const auto& a, const auto& b) {
-        return a.first > b.first;
-    });
-
-    for (size_t i = 0; i < move_count; i++) {
-        movelist[i] = scored_moves[i].second;
+        g_scored_moves[ply][i] = std::make_pair(score, move);
     }
 }
 
-// Captures sorting — returns a fixed-size std::array<bool, MAX_MOVES> and length
-std::array<bool, MAX_MOVES> sort_captures(Board& board, Movelist& movelist, bool tt_hit, std::uint16_t tt_move) {
-    const size_t move_count = movelist.size();
-    assert(move_count <= MAX_MOVES);
+// Get next highest scoring unused move for a ply
+Move get_next_move(int32_t ply)
+{
+    int32_t best_score = -1000000000;
+    size_t best_index = SIZE_MAX;
 
-    std::array<std::tuple<int32_t, bool, Move>, MAX_MOVES> scored_moves;
-    std::array<bool, MAX_MOVES> result_sees;
+    for (size_t i = 0; i < g_move_count[ply]; i++) {
+        uint16_t move_id = g_scored_moves[ply][i].second.move();
 
-    for (size_t i = 0; i < move_count; i++) {
+        if (!g_move_used[ply][move_id] && g_scored_moves[ply][i].first > best_score) {
+            best_score = g_scored_moves[ply][i].first;
+            best_index = i;
+        }
+    }
+
+    if (best_index != SIZE_MAX) {
+        uint16_t move_id = g_scored_moves[ply][best_index].second.move();
+        g_move_used[ply][move_id] = true;
+        return g_scored_moves[ply][best_index].second;
+    }
+
+    // No moves left for this ply
+    g_move_count[ply] = 0;
+    return Move();
+}
+
+
+/****************************************
+*           CAPTURES SORTING            *
+*****************************************/
+
+// Per-ply storage for captures
+static std::array<std::array<std::pair<int32_t, Move>, MAX_MOVES>, MAX_PLY+1> g_scored_captures;
+static std::array<size_t, MAX_PLY+1> g_capture_count{};
+static std::array<std::array<bool, 65536>, MAX_PLY+1> g_capture_used{};
+
+// Score captures without sorting
+void sort_captures_lazy(Board& board, Movelist& movelist, bool tt_hit, uint16_t tt_move, int32_t ply)
+{
+    // Reset used flags for this ply
+    std::fill(std::begin(g_capture_used[ply]), std::end(g_capture_used[ply]), false);
+
+    g_capture_count[ply] = movelist.size();
+    assert(g_capture_count[ply] <= MAX_MOVES);
+
+    for (size_t i = 0; i < g_capture_count[ply]; i++) {
         const auto& move = movelist[i];
-        bool good_see = see(board, move, 0);
-        int32_t score = tt_hit && move.move() == tt_move
+
+        int32_t score = (tt_hit && move.move() == tt_move)
                         ? TT_BONUS
-                        : mvv_lva(board, move) + (good_see ? 0 : -10000000);
+                        : mvv_lva(board, move) + (see(board, move, 0) ? 0 : -10000000);
 
-        scored_moves[i] = std::make_tuple(score, good_see, move);
+        g_scored_captures[ply][i] = std::make_pair(score, move);
+    }
+}
+
+// Get next best unused capture for a ply
+Move get_next_capture(int32_t ply)
+{
+    int32_t best_score = -1000000000;
+    size_t best_index = SIZE_MAX;
+
+    for (size_t i = 0; i < g_capture_count[ply]; i++) {
+        uint16_t move_id = g_scored_captures[ply][i].second.move();
+
+        if (!g_capture_used[ply][move_id] && g_scored_captures[ply][i].first > best_score) {
+            best_score = g_scored_captures[ply][i].first;
+            best_index = i;
+        }
     }
 
-    std::stable_sort(scored_moves.begin(), scored_moves.begin() + move_count, [](const auto& a, const auto& b) {
-        return std::get<0>(a) > std::get<0>(b);
-    });
-
-    for (size_t i = 0; i < move_count; i++) {
-        const auto& [score, see_val, move] = scored_moves[i];
-        movelist[i] = move;
-        result_sees[i] = see_val;
+    if (best_index != SIZE_MAX) {
+        uint16_t move_id = g_scored_captures[ply][best_index].second.move();
+        g_capture_used[ply][move_id] = true;
+        return g_scored_captures[ply][best_index].second;
     }
 
-    return result_sees;
+    // No captures left
+    g_capture_count[ply] = 0;
+    return Move();
 }
