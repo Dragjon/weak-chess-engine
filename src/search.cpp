@@ -49,7 +49,7 @@ int32_t fail_high_count[257]{};
 
 // Quiescence search. When we are in a noisy position (there are captures), we try to "quiet" the position by
 // going down capture trees using negamax and return the eval when we re in a quiet position
-int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
+int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply, int32_t branch){
 
     // Increment node count
     total_nodes++;
@@ -111,7 +111,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
     // Move ordering
     if (capture_moves.size() != 0) { 
-        sort_captures_lazy(board, capture_moves, tt_hit, entry.best_move, ply);
+        sort_captures_lazy(board, capture_moves, tt_hit, entry.best_move, branch);
     }
 
     // Qsearch pruning stuff
@@ -126,7 +126,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         if (!board.inCheck() && moves_played >= 2)
             break;
 
-        Move current_move = get_next_capture(ply);
+        Move current_move = get_next_capture(branch);
 
         // QSEE pruning, if a move is obviously losing, don't search it
         // STC: 179.35 +/- 31.54
@@ -137,7 +137,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         // debugging is for later
         board.makeMove(current_move);
         moves_played++;
-        int32_t score = -q_search(board, -beta, -alpha, ply + 1);
+        int32_t score = -q_search(board, -beta, -alpha, ply + 1, branch + 1);
         board.unmakeMove(current_move);
 
         // Updating best_score and alpha beta pruning
@@ -171,7 +171,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 // ply. This works because a position which is a win for white is a loss for black and vice versa. Most "strong" chess engines use
 // negamax instead of minimax because it makes the code much tidier. Not sure about how much is gains though. The "fail soft" basically
 // means we return max_value instead of alpha. This gives us more information to do puning etc etc.
-int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int32_t ply, bool cut_node, SearchInfo search_info){
+int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int32_t ply, int32_t branch, bool cut_node, SearchInfo search_info){
 
     // Search variables
     // max_score for fail-soft negamax
@@ -240,7 +240,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Depth <= 0 (because we allow depth to drop below 0) - we end our search and return eval (haven't started qs yet)
     if (depth <= 0){
-        return q_search(board, alpha, beta, ply);
+        return q_search(board, alpha, beta, ply, branch + 1);
     }
 
     // Reset fail-high count for next ply
@@ -299,7 +299,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         && depth <= 3 
         && static_eval + razoring_base.current + razoring_quad_mul.current * depth * depth <= alpha  
         && search_info.excluded == 0){
-        return q_search(board, alpha, beta, ply + 1);
+        return q_search(board, alpha, beta, ply + 1, branch + 1);
     }
 
     // Null move pruning. Basically, we can assume that making a move 
@@ -322,8 +322,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Search has no parents :(
         SearchInfo info{};                                                                   
         info.parent_parent_move_piece = parent_move_piece;
-        info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
-        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
+        info.parent_parent_move_square = parent_move_square;                                
+        int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, branch + 1, !cut_node, info);
         board.unmakeNullMove();
 
         if (null_score >= beta)
@@ -364,7 +364,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // 4th Histories (quiets) (STC: 41.16 +/- 13.63)
     //      - 1 ply conthist (countermoves) (STC: 31.45 +- 16.47)
     //      - 2 ply conthist (follow-up moves) (STC: 6.57 +- 5.04)
-    sort_moves_lazy(board, all_moves, tt_hit, entry.best_move, ply, search_info);
+    sort_moves_lazy(board, all_moves, tt_hit, entry.best_move, branch, search_info);
 
     for (int idx = 0; idx < all_moves.size(); idx++){
 
@@ -373,7 +373,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t extension = 0;
         int64_t nodes_b4 = total_nodes;
 
-        Move current_move = get_next_move(ply);
+        Move current_move = get_next_move(branch);
 
         // Skip excluded singular moves
         if (current_move.move() == search_info.excluded)
@@ -426,7 +426,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             int32_t singular_depth = (depth - 1) / 2;
 
             se_info.excluded = entry.best_move;
-            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, cut_node, se_info); 
+            int32_t score = alpha_beta(board, singular_depth, singular_beta - 1, singular_beta, ply, branch + 1, cut_node, se_info); 
 
             if (score < singular_beta){
                 extension = 1;
@@ -531,18 +531,18 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // STC: 54.25 +/- 15.03
         // STC: 27.39 +/- 11.81 (Triple PVS)
         if (move_count == 1)
-            score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
+            score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, branch + 1, false, info);
         else {
-            score = -alpha_beta(board, new_depth - reduction, -alpha - 1, -alpha, ply + 1, true, info);
+            score = -alpha_beta(board, new_depth - reduction, -alpha - 1, -alpha, ply + 1, branch + 1, true, info);
 
             // Triple PVS
             if (reduction > 0 && score > alpha){                                          
-                score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+                score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, branch + 1, !cut_node, info);
             }
 
             // Research
             if (score > alpha && score < beta) {
-                score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
+                score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, branch + 1, false, info);
             }
         }
 
@@ -713,7 +713,7 @@ int32_t search_root(Board &board){
 
                 total_nodes_per_search = 0ll;
                 SearchInfo info{};
-                new_score = alpha_beta(board, global_depth, alpha, beta, 0, false, info);
+                new_score = alpha_beta(board, global_depth, alpha, beta, 0, 0, false, info);
                 int64_t elapsed_time = elapsed_ms();
 
                 // Upperbound

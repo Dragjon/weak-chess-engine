@@ -17,7 +17,7 @@ using namespace chess;
 constexpr int32_t TT_BONUS = 1000000;
 constexpr int32_t KILLER_BONUS = 90000;
 constexpr size_t MAX_MOVES = 256;
-constexpr size_t MAX_PLY   = 255;
+constexpr size_t MAX_PLY = 300;
 
 /****************************************
 *             SEARCH SORTING            *
