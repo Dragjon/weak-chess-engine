@@ -75,7 +75,7 @@ SearchParam history_malus_base("HistoryMalusBase", 1, -384, 768, 64);
 SearchParam history_malus_mul_linear("HistoryMalusMulLinear", 260, 64, 384, 32);
 SearchParam history_malus_mul_quad("HistoryMalusMulQuad", 145, 1, 1536, 64);
 
-SearchParam history_reduction_div("HistoryReductionDiv", 16384, 1024, 16384, 128);
+SearchParam history_reduction_div("HistoryReductionDiv", 24576, 8192, 32768, 128);
 
 SearchParam razoring_base("RazoringBase", 616, -384, 768, 64);
 SearchParam razoring_quad_mul("RazoringQuadMul", 308, 1, 1536, 64);
