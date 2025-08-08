@@ -497,6 +497,13 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce more if this branch is known to fail high
             // STC: 5.41 +- 4.10
             reduction += !is_root && fail_high_count[ply + 1] > 2;
+
+            // TT complexity LMR
+            // If we have searched for some moves, and we find that
+            // the TT bestscore is quite far away from our search, we
+            // should be able to say with some certainty that the
+            // position is complex and thus we reduce less.
+            reduction -= move_count >= 5 && tt_hit && best_score > -POSITIVE_WIN_SCORE && abs(best_score - entry.score) > 30;
         }
 
         int32_t score = 0;
