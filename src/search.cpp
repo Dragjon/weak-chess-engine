@@ -497,11 +497,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce more if this branch is known to fail high
             // STC: 5.41 +- 4.10
             reduction += !is_root && fail_high_count[ply + 1] > 2;
-
-            // Reduce more if best move after searching for a while
-            // is a capture as quiets are probably not going
-            // to beat captures
-            reduction += move_count >= 5 && board.isCapture(current_best_move);
         }
 
         int32_t score = 0;
