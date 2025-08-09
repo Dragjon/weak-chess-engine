@@ -432,10 +432,16 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             if (score < singular_beta){
                 extension = 1;
-            
-                // Duble extensions
-                if (!pv_node && score < singular_beta - 16)
-                    extension = 2;
+
+                if (!pv_node){
+                    // Duble extensions
+                    if (score < singular_beta - 16)
+                        extension = 2;
+
+                    // Triple extensions
+                    if (score < singular_beta - 100)
+                        extension = 3;
+                }
             }
 
             // Multi-cut pruning
