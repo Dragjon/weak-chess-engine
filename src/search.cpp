@@ -505,6 +505,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (is_noisy_move && depth >= 3 && (!tt_was_pv || cut_node)){
 
             // Basic lmr "loglog" formula
+            // STC: 17.07 +- 8.42
             reduction += (int32_t)((38.0 / 100.0) + ((26.0 * log(depth) * log(move_count)) / 100));
 
         }
@@ -552,6 +553,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // our research based on how far our score is away
             // from the bestscore. The conditions and initial
             // untuned values are taken from Sirius.
+            // STC: 4.50 +- 3.49
             bool do_deeper = score > best_score + 37 + 139 * new_depth / 64;
             bool do_shallower = score < best_score + 8;
 
