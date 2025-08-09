@@ -105,3 +105,7 @@ extern SearchParam soft_tm_ratio;
 extern SearchParam hard_tm_ratio;
 extern SearchParam node_tm_base;
 extern SearchParam node_tm_mul;
+extern SearchParam lmr_futility_base;
+extern SearchParam lmr_futility_multiplier;
+extern SearchParam capt_lmr_base;
+extern SearchParam capt_lmr_multiplier;

@@ -491,7 +491,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // LMR Futility
             // Similar concept to futility pruning but we can be more aggressive
             // STC: 8.66 +- 5.65
-            reduction += static_eval + 50 + 50 * depth <= alpha; 
+            reduction += static_eval + lmr_futility_base.current + lmr_futility_multiplier.current * depth <= alpha; 
 
             // Fail-High LMR
             // Reduce more if this branch is known to fail high
@@ -506,7 +506,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             // Basic lmr "loglog" formula
             // STC: 17.07 +- 8.42
-            reduction += (int32_t)((38.0 / 100.0) + ((26.0 * log(depth) * log(move_count)) / 100));
+            reduction += (int32_t)(((double)capt_lmr_base.current / 100) + (((double)capt_lmr_multiplier.current * log(depth) * log(move_count)) / 100));
 
         }
 

@@ -57,10 +57,10 @@ SearchParam late_move_pruning_base("LateMovePruningBase", 3, 1, 10, 1);
 SearchParam late_move_pruning_quad("LateMovePruningQuad", 3, 1, 10, 1);
 
 SearchParam futility_eval_base("FutilityEvalBase", 104, 50, 200, 15);
-SearchParam futility_depth_mul("FutilityDepthMul", 101, 50, 200, 6);
+SearchParam futility_depth_mul("FutilityDepthMul", 101, 50, 200, 12);
 
 SearchParam aspiration_window_delta("AspirationWindowDelta", 9, 5, 30, 2);
-SearchParam aspiration_widening_factor("AspirationWideningFactor", 25, 1, 200, 20);
+SearchParam aspiration_widening_factor("AspirationWideningFactor", 25, 1, 200, 10);
 
 SearchParam see_noisy_margin("SeeNoisyMargin", -98, -120, -30, 6);
 SearchParam see_quiet_margin("SeeQuietMargin", -55, -120, -30, 6);
@@ -75,12 +75,12 @@ SearchParam history_malus_base("HistoryMalusBase", 1, -384, 768, 64);
 SearchParam history_malus_mul_linear("HistoryMalusMulLinear", 260, 64, 384, 32);
 SearchParam history_malus_mul_quad("HistoryMalusMulQuad", 145, 1, 1536, 64);
 
-SearchParam history_reduction_div("HistoryReductionDiv", 8192, 1024, 16384, 128);
+SearchParam history_reduction_div("HistoryReductionDiv", 8192, 1024, 16384, 512);
 
-SearchParam razoring_base("RazoringBase", 616, -384, 768, 64);
-SearchParam razoring_quad_mul("RazoringQuadMul", 308, 1, 1536, 64);
+SearchParam razoring_base("RazoringBase", 616, -384, 768, 15);
+SearchParam razoring_quad_mul("RazoringQuadMul", 308, 1, 1536, 15);
 
-SearchParam see_pawn("SEEPawn", 105, 70, 130, 10);
+SearchParam see_pawn("SEEPawn", 105, 70, 130, 15);
 SearchParam see_knight("SEEKnight", 340, 250, 450, 15);
 SearchParam see_bishop("SEEBishop", 312, 250, 450, 15);
 SearchParam see_rook("SEERook", 502, 400, 650, 15);
@@ -88,9 +88,15 @@ SearchParam see_queen("SEEQueen", 928, 800, 1200, 15);
 
 SearchParam delta_pruning_pawn_bonus("DeltaPruningPawnBonus", 134, 80, 200, 20);
 
-SearchParam tempo("Tempo", 4, 0, 20, 3);
+SearchParam tempo("Tempo", 4, 0, 20, 2);
 
 SearchParam soft_tm_ratio("SoftTMRatio", 29, 5, 50, 8);
 SearchParam hard_tm_ratio("HardTMRatio", 1, 1, 20, 4);
 SearchParam node_tm_base("NodeTMBase", 211, 50, 300, 20);
 SearchParam node_tm_mul("NodeTMMul", 113, 50, 300, 20);
+
+SearchParam lmr_futility_base("LMRFutilityBase", 50, 20, 80, 15);
+SearchParam lmr_futility_multiplier("LMRFutilityMultiplier", 50, 20, 80, 7);
+
+SearchParam capt_lmr_base("CaptLMRBase", 38, 15, 50, 15);
+SearchParam capt_lmr_multiplier("CaptLMRMultiplier", 26, 10, 40, 7);
