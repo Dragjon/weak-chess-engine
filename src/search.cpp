@@ -508,6 +508,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // STC: 17.07 +- 8.42
             reduction += (int32_t)((38.0 / 100.0) + ((26.0 * log(depth) * log(move_count)) / 100));
 
+            // LMR corrplexity - reduce less if we are in a complex 
+            // position, determined by the difference between corrected eval
+            // and raw evaluation
+            reduction -= abs(raw_eval - static_eval) > 87;
         }
 
         int32_t score = 0;
