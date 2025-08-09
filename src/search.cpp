@@ -503,7 +503,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // the TT bestscore is quite far away from our search, we
             // should be able to say with some certainty that the
             // position is complex and thus we reduce less.
-            reduction -= move_count >= 5 && tt_hit && best_score > -POSITIVE_WIN_SCORE && abs(best_score - entry.score) > 20;
+            reduction -= move_count >= 5 && tt_hit && best_score > -POSITIVE_WIN_SCORE && abs(best_score - entry.score) > 10;
         }
 
         int32_t score = 0;
