@@ -273,9 +273,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // STC: 15.42 +- 7.84 (major)
     int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
 
-    // Improving heuristic (Whether we are at a better position than 2 plies before)
-    // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
-
     // Reverse futility pruning / Static Null Move Pruning
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
@@ -507,6 +504,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Basic lmr "loglog" formula
             // STC: 17.07 +- 8.42
             reduction += (int32_t)((38.0 / 100.0) + ((26.0 * log(depth) * log(move_count)) / 100));
+
+            // Reduce less when in check
+            reduction -= in_check;
 
         }
 
