@@ -53,8 +53,12 @@
       * Captures
       * Quiets
     * Late move reductions
-    * History reductions
-    * Eval complexity reductions
+      * Basic log-log formula
+      * History reductions
+      * Eval complexity reductions
+      * In-check reductions
+      * Futility reductions
+      * Fail-high reductions
     * Check extensions
   * Others
     * Static evaluation correction history
