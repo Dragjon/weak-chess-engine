@@ -546,19 +546,27 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         if (move_count == 1)
             score = -alpha_beta(board, new_depth, -beta, -alpha, ply + 1, false, info);
         else {
-            score = -alpha_beta(board, new_depth - reduction, -alpha - 1, -alpha, ply + 1, true, info);
+            // PVS for reduced moves
+            if (reduction > 0){
+                score = -alpha_beta(board, new_depth - reduction, -alpha - 1, -alpha, ply + 1, true, info);
 
-            // Triple PVS research if reduced score beats alpha
-            // We have dynamic conditions to change the depth of 
-            // our research based on how far our score is away
-            // from the bestscore. The conditions and initial
-            // untuned values are taken from Sirius.
-            // STC: 4.50 +- 3.49
-            bool do_deeper = score > best_score + 37 + 139 * new_depth / 64;
-            bool do_shallower = score < best_score + 8;
+                // Triple PVS research if reduced score beats alpha
+                // We have dynamic conditions to change the depth of 
+                // our research based on how far our score is away
+                // from the bestscore. The conditions and initial
+                // untuned values are taken from Sirius.
+                // STC: 4.50 +- 3.49
+                bool do_deeper = score > best_score + 37 + 139 * new_depth / 64;
+                bool do_shallower = score < best_score + 8;
 
-            if (reduction > 0 && score > alpha){ 
-                new_depth += do_deeper - do_shallower;                                        
+                if (score > alpha){ 
+                    new_depth += do_deeper - do_shallower;                                        
+                    score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, !cut_node, info);
+                }
+            }
+            
+            // PVS for other moves
+            else {
                 score = -alpha_beta(board, new_depth, -alpha - 1, -alpha, ply + 1, !cut_node, info);
             }
 
