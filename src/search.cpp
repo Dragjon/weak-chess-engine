@@ -499,6 +499,16 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             reduction += !is_root && fail_high_count[ply + 1] > 2;
         }
 
+        // Capture late move reductions - since the move is a capture
+        // we have to be more careful as to how much we reduce as capture 
+        // moves tend to be more noisy
+        if (is_noisy_move && depth >= 3 && (!tt_was_pv || cut_node)){
+
+            // Basic lmr "loglog" formula
+            reduction += (int32_t)((38.0 / 100.0) + ((26.0 * log(depth) * log(move_count)) / 100));
+
+        }
+
         int32_t score = 0;
         bool turn = board.sideToMove() == chess::Color::WHITE;
         int32_t to = current_move.to().index();
