@@ -505,6 +505,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce more in cut nodes
             // STC: 6.47 +- 4.60
             reduction += cut_node;
+
+            // Reduce less in pv nodes
+            reduction -= pv_node;
         }
 
         // Capture late move reductions - since the move is a capture
