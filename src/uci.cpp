@@ -19,7 +19,7 @@
 #include "bench.hpp"
 #include "history.hpp"
 
-#define IS_TUNING 1
+#define IS_TUNING 0
 
 using namespace std;
 using namespace chess;
