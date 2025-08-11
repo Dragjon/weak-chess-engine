@@ -1,1 +1,5 @@
 *.exe
+src/weak_v1
+src/weak_v2
+src/weak_v3
+src/weak_v4
