@@ -330,7 +330,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         if (null_score >= beta)
             // Do not return false mates in null move pruning (patch)
-            return abs(null_score) >= POSITIVE_WIN_SCORE ? beta : null_score;
+            return abs(null_score) >= POSITIVE_WIN_SCORE ? beta : (null_score + beta) / 2;
     }
 
     // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
