@@ -516,6 +516,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // STC: 17.07 +- 8.42
             reduction += (int32_t)(((double)capt_lmr_base.current / 100) + (((double)capt_lmr_multiplier.current * log(depth) * log(move_count)) / 100));
 
+            // Fail-High LMR
+            // Reduce more if this branch is known to fail high
+            reduction += !is_root && fail_high_count[ply + 1] > 2;
+
         }
 
         int32_t score = 0;
