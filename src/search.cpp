@@ -669,7 +669,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
 
         // Storing transpositions
-        tt.store(zobrists_key, best_score, depth, bound, best_move_tt, tt_was_pv);
+        // Idea from polaris - increase depth for tt if in check
+        tt.store(zobrists_key, best_score, depth + in_check, bound, best_move_tt, tt_was_pv);
     }
 
     return best_score;
