@@ -359,6 +359,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     killers[0][ply+1] = Move{}; 
     killers[1][ply+1] = Move{}; 
 
+    // Store num alpha raises
+    int32_t num_alpha_raises = 0;
+
     // Move orderings
     // 1st TT Move (STC: 354.04 +/- 42.86)
     // 2nd MVV-LVA (STC: 109.50 +/- 25.18 (Note this is when mvv-lva was buggy)) + SEE (STC: 24.53 +- 14.42)
@@ -505,6 +508,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce more in cut nodes
             // STC: 6.47 +- 4.60
             reduction += cut_node;
+
+            // Reduce less when we have raised alpha more than
+            // a certain number of times, which could indicate that
+            // the position is too complex for our move ordering
+            reduction -= num_alpha_raises >= 3;
         }
 
         // Capture late move reductions - since the move is a capture
@@ -600,6 +608,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Update alpha
             if (score > alpha){
                 alpha = score;
+                num_alpha_raises++;
 
                 // Alpha-Beta Pruning
                 if (alpha >= beta){
