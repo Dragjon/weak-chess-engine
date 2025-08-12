@@ -132,7 +132,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
         // QSEE pruning, if a move is obviously losing, don't search it
         // STC: 179.35 +/- 31.54
-        if (!see_bools[idx])
+        if (best_score > -POSITIVE_WIN_SCORE && !see_bools[idx])
             continue;
 
         // Basic make and undo functionality. Copy-make should be faster but that
