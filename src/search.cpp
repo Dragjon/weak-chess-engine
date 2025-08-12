@@ -245,8 +245,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         return q_search(board, alpha, beta, ply);
     }
 
-    // Reset fail-high count for next ply
+    // Reset fail-high count for next plies
     fail_high_count[ply + 1] = 0;
+    fail_high_count[ply + 2] = 0;
 
     // Get the TT Entry for current position
     TTEntry entry{};
@@ -494,7 +495,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             reduction += static_eval + lmr_futility_base.current + lmr_futility_multiplier.current * depth <= alpha; 
 
             // Fail-High LMR
-            // Reduce more if this branch is known to fail high
+            // Reduce more if this branch is known to fail high => this node fails low
             // STC: 5.41 +- 4.10
             reduction += !is_root && fail_high_count[ply + 1] > 2;
 
@@ -505,6 +506,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce more in cut nodes
             // STC: 6.47 +- 4.60
             reduction += cut_node;
+
+            // Reduce more when this node is known to fail high
+            reduction += fail_high_count[ply] > 3;
         }
 
         // Capture late move reductions - since the move is a capture
