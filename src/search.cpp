@@ -273,6 +273,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // STC: 15.42 +- 7.84 (major)
     int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
 
+    // The complexity of the position, measured as the difference
+    // in static eval and corrected eval
+    int32_t corrplexity = raw_eval - static_eval;
+
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
@@ -281,11 +285,12 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // above beta. We "predict" that a beta cutoff will happen
     // and return eval without searching moves
     // STC: 132.85 +/- 26.94
+    int32_t rfp_margin = reverse_futility_margin.current * depth + corrplexity * 60 / 128;
     if (!pv_node 
         && !tt_was_pv 
         && !in_check 
         && depth <= 8 
-        && static_eval - reverse_futility_margin.current * depth >= beta 
+        && static_eval - rfp_margin * depth >= beta 
         && search_info.excluded == 0){
         return (static_eval + beta) / 2;
     }
@@ -480,7 +485,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // position, determined by the difference between corrected eval
             // and raw evaluation
             // STC: 9.63 +- 6.01
-            reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+            reduction -= abs(corrplexity) > late_move_reduction_corrplexity.current;
 
             // Reduce more when in check
             // Ultra scaler somehow
