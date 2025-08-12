@@ -274,7 +274,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
-    // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
+    bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
     // Reverse futility pruning / Static Null Move Pruning
     // If eval is well above beta, we assume that it will hold
@@ -505,6 +505,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce more in cut nodes
             // STC: 6.47 +- 4.60
             reduction += cut_node;
+
+            // Reduce less when improving
+            reduction -= improving;
         }
 
         // Capture late move reductions - since the move is a capture
@@ -544,6 +547,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         info.parent_parent_move_square = parent_move_square;
         info.parent_move_piece = move_piece;
         info.parent_move_square = to;
+        info.parent_parent_eval = search_info.parent_static_eval;
+        info.parent_static_eval = static_eval;
 
         // Adjust new depth
         new_depth = depth + extension - 1;
