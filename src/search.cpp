@@ -118,14 +118,17 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
     // Qsearch pruning stuff
     int32_t moves_played = 0;
-
     Move current_best_move{};
+    bool in_check = !board.inCheck();
+
+    // QS Futility margin
+    int32_t futility_eval = eval + 69;
     
     for (int idx = 0; idx < capture_moves.size(); idx++){
 
         // QSearch movecount pruning
         // STC: 25.78 +- 14.91
-        if (!board.inCheck() && moves_played >= 2)
+        if (!in_check && moves_played >= 2)
             break;
 
         Move current_move = capture_moves[idx];
@@ -134,6 +137,12 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         // STC: 179.35 +/- 31.54
         if (!see_bools[idx])
             continue;
+        
+        // QS Futility pruning
+        if (!in_check && futility_eval <= alpha && see(board, current_move, 1)){
+            best_score = max(best_score, futility_eval);
+            continue;
+        }
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later

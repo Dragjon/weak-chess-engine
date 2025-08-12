@@ -69,6 +69,7 @@
         "coroutine": "cpp",
         "map": "cpp",
         "random": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "numeric": "cpp"
     }
 }
