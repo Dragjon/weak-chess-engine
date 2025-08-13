@@ -145,11 +145,11 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
         // Updating best_score and alpha beta pruning
         if (score > best_score){
             best_score = score;
+            current_best_move = current_move;
 
             // Update alpha
             if (score > alpha){
                 alpha = score;
-                current_best_move = current_move;
 
                 // Alpha-Beta Pruning
                 if (alpha >= beta)
@@ -257,6 +257,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Transposition Table cutoffs
     // Only cut with a greater or equal depth search
     if (!pv_node 
+        && (cut_node || entry.score <= alpha)
         && entry.depth >= depth 
         && tt_hit 
         && ((entry.type == NodeType::EXACT) || (entry.type == NodeType::LOWERBOUND && entry.score >= beta)  || (entry.type == NodeType::UPPERBOUND && entry.score <= alpha)) 
@@ -587,6 +588,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Updating best_score and alpha beta pruning
         if (score > best_score){
             best_score = score;
+            current_best_move = current_move;
 
             if (is_root){
                 root_best_move = current_move;
@@ -599,7 +601,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Update alpha
             if (score > alpha){
                 alpha = score;
-                current_best_move = current_move;
 
                 // Alpha-Beta Pruning
                 if (alpha >= beta){
