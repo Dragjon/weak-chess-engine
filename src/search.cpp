@@ -139,7 +139,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
             continue;
         
         // QS Futility pruning
-        if (!in_check && futility_eval <= alpha && see(board, current_move, 1)){
+        if (!in_check && futility_eval <= alpha && !see(board, current_move, 1)){
             best_score = max(best_score, futility_eval);
             continue;
         }
