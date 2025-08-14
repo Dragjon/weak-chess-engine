@@ -286,6 +286,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (!pv_node 
         && !tt_was_pv 
         && !in_check 
+        && (abs(static_eval - raw_eval) < 50)
         && depth <= 8 
         && static_eval - reverse_futility_margin.current * depth >= beta 
         && search_info.excluded == 0){
