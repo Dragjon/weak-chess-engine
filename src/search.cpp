@@ -462,6 +462,24 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             && best_score > -POSITIVE_WIN_SCORE)
             continue;
 
+        int32_t score = 0;
+        bool turn = board.sideToMove() == chess::Color::WHITE;
+        int32_t to = current_move.to().index();
+        int32_t from = current_move.from().index();
+        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+
+        // Basic make and undo functionality. Copy-make should be faster but that
+        // debugging is for later
+        board.makeMove(current_move);
+
+        // Check extension, we increase the depth of moves that give check
+        // This helps mitigate the horizon effect where noisy nodes are 
+        // mistakenly evaluated
+        // STC: 19.66 +/- 8.51
+        bool gives_check = board.inCheck();
+        if (extension == 0 && gives_check)
+            extension++;
+            
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
@@ -511,6 +529,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce less for killer moves
             // STC: 5.45 +- 4.10
             reduction -= (killers[0][ply] == current_move) || (killers[1][ply] == current_move);
+
+            // Reduce less when move gives check
+            reduction -= gives_check;
         }
 
         // Capture late move reductions - since the move is a capture
@@ -523,23 +544,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             reduction += (int32_t)(((double)capt_lmr_base.current / 100) + (((double)capt_lmr_multiplier.current * log(depth) * log(move_count)) / 100));
 
         }
-
-        int32_t score = 0;
-        bool turn = board.sideToMove() == chess::Color::WHITE;
-        int32_t to = current_move.to().index();
-        int32_t from = current_move.from().index();
-        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
-
-        // Basic make and undo functionality. Copy-make should be faster but that
-        // debugging is for later
-        board.makeMove(current_move);
-
-        // Check extension, we increase the depth of moves that give check
-        // This helps mitigate the horizon effect where noisy nodes are 
-        // mistakenly evaluated
-        // STC: 19.66 +/- 8.51,
-        if (extension == 0 && board.inCheck())
-            extension++;
 
         if (!is_noisy_move) 
             quiets_searched[quiets_searched_idx++] = current_move;
