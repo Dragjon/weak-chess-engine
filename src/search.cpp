@@ -416,7 +416,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
                 // Futility Pruning
                 // Initial untuned values and conditions were taken from Clover engine
                 // https://github.com/lucametehau/CloverEngine/blob/master/src/search.h#L652
-                int32_t captured_piece = static_cast<int32_t>(board.at(current_move.to()).internal());
+                int32_t captured_piece = static_cast<int32_t>(board.at(current_move.to()).type().internal());
                 if (depth <= 8 
                     && !pv_node 
                     && !in_check 
