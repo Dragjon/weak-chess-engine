@@ -403,7 +403,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
             // Futility Pruning
             // STC: 14.92 +- 10.00
-            if (depth <= 4 
+            if (depth <= 8 
                 && !pv_node 
                 && !in_check 
                 && (static_eval + futility_eval_base.current) + futility_depth_mul.current * depth <= alpha) 
