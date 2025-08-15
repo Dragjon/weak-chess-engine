@@ -484,6 +484,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // STC: 9.63 +- 6.01
             reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
 
+            // More lmr corrplexity for super high correction positions
+            // with high complexity
+            reduction -= abs(raw_eval - static_eval) > 140;
+
             // Reduce more when in check
             // Ultra scaler somehow
             // STC: 3.86 +- 3.10
