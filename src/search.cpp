@@ -500,9 +500,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // STC: 5.41 +- 4.10
             reduction += !is_root && fail_high_count[ply + 1] > 2;
 
-            // Reduce less in ttpv nodes
+            // Reduce less in ttpv nodes with valuable info
             // STC: 5.18 +- 3.94
-            reduction -= tt_was_pv;
+            reduction -= (tt_was_pv && entry.depth >= depth);
 
             // Reduce more in cut nodes
             // STC: 6.47 +- 4.60
