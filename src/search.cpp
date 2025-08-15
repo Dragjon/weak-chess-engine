@@ -387,27 +387,42 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         bool is_noisy_move = board.isCapture(current_move);
         int32_t move_history = !is_noisy_move ? quiet_history[board.sideToMove() == chess::Color::WHITE][current_move.from().index()][current_move.to().index()] : 0;
 
-        // Quiet Move Prunings
-        if (!is_root && !is_noisy_move && best_score > -POSITIVE_WIN_SCORE) {
-            // Quiet History Pruning
-            // STC: 24.29 +- 10.37
-            if (depth <= 4 
-                && !in_check 
-                && move_history < depth * depth * -quiet_history_pruning_quad.current) 
-                break;
+        // Move loop prunings
+        if (!is_root && best_score > -POSITIVE_WIN_SCORE) {
+            // Pruning for quiets
+            if (!is_noisy_move){
+                // Quiet History Pruning
+                // STC: 24.29 +- 10.37
+                if (depth <= 4 
+                    && !in_check 
+                    && move_history < depth * depth * -quiet_history_pruning_quad.current) 
+                    break;
 
-            // Late Move Pruning
-            // STC: 33.58 +- 16.99
-            if (move_count >= late_move_pruning_base.current + late_move_pruning_quad.current * depth * depth) 
-                continue;
+                // Late Move Pruning
+                // STC: 33.58 +- 16.99
+                if (move_count >= late_move_pruning_base.current + late_move_pruning_quad.current * depth * depth) 
+                    continue;
 
-            // Futility Pruning
-            // STC: 14.92 +- 10.00
-            if (depth <= 4 
-                && !pv_node 
-                && !in_check 
-                && (static_eval + futility_eval_base.current) + futility_depth_mul.current * depth <= alpha) 
-                continue;
+                // Futility Pruning
+                // STC: 14.92 +- 10.00
+                if (depth <= 4 
+                    && !pv_node 
+                    && !in_check 
+                    && static_eval + futility_eval_base.current + futility_depth_mul.current * depth <= alpha) 
+                    continue;
+            }
+            // Pruning for captures
+            else {
+                // Futility Pruning
+                // Initial untuned values and conditions were taken from Clover engine
+                // https://github.com/lucametehau/CloverEngine/blob/master/src/search.h#L652
+                int32_t captured_piece = static_cast<int32_t>(board.at(current_move.to()).internal());
+                if (depth <= 8 
+                    && !pv_node 
+                    && !in_check 
+                    && 99 + see_piece_values[captured_piece] + 88 * depth <= alpha) 
+                    continue;
+            }
         }
 
         // Singular extensions
