@@ -511,6 +511,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce less for killer moves
             // STC: 5.45 +- 4.10
             reduction -= (killers[0][ply] == current_move) || (killers[1][ply] == current_move);
+
+            // Reduce more for noisy transposition
+            reduction += tt_hit && board.isCapture(entry.best_move);
         }
 
         // Capture late move reductions - since the move is a capture
