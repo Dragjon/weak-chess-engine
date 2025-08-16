@@ -513,7 +513,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             reduction -= (killers[0][ply] == current_move) || (killers[1][ply] == current_move);
 
             // Reduce more if move worsens static eval by a lot
-            reduction += -corrhist_adjust_eval(board, evaluate(board)) < static_eval - 50 * depth;
+            reduction += -corrhist_adjust_eval(board, evaluate(board)) < static_eval - 100 * depth;
         }
 
         // Capture late move reductions - since the move is a capture
