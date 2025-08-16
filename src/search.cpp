@@ -399,7 +399,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Late Move Pruning
             // STC: 33.58 +- 16.99
             if (move_count >= late_move_pruning_base.current + late_move_pruning_quad.current * depth * depth) 
-                continue;
+                break;
 
             // Futility Pruning
             // STC: 14.92 +- 10.00
