@@ -89,6 +89,12 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // Correct static evaluation with our correction histories
     eval = corrhist_adjust_eval(board, eval);
 
+    // TT Evaluation correction for our evaluation
+    if (tt_hit && (entry.type == NodeType::EXACT
+            || (entry.type == NodeType::LOWERBOUND && entry.score >= eval)
+            || (entry.type == NodeType::UPPERBOUND && entry.score <= eval)))
+        eval = entry.score;
+
     int32_t best_score = eval;
     if (best_score >= beta) return best_score;
     if (best_score > alpha) alpha = best_score;
@@ -273,7 +279,14 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // STC: 3.49 +- 2.77 (non pawn)
     // STC: 9.93 +- 6.18 (minor)
     // STC: 15.42 +- 7.84 (major)
-    int32_t static_eval = corrhist_adjust_eval(board, raw_eval);
+    int32_t corrected_eval = corrhist_adjust_eval(board, raw_eval);
+
+    // TT Evaluation correction for our evaluation
+    int32_t tt_corrected_eval = corrected_eval;
+    if (tt_hit && (entry.type == NodeType::EXACT
+            || (entry.type == NodeType::LOWERBOUND && entry.score >= corrected_eval)
+            || (entry.type == NodeType::UPPERBOUND && entry.score <= corrected_eval)))
+        tt_corrected_eval = entry.score;
 
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
@@ -287,9 +300,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         && !tt_was_pv 
         && !in_check 
         && depth <= 8 
-        && static_eval - reverse_futility_margin.current * depth >= beta 
+        && tt_corrected_eval - reverse_futility_margin.current * depth >= beta 
         && search_info.excluded == 0){
-        return (static_eval + beta) / 2;
+        return (tt_corrected_eval + beta) / 2;
     }
 
     // Razoring / Alpha pruning
@@ -301,7 +314,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     if (!pv_node 
         && !in_check 
         && depth <= 3 
-        && static_eval + razoring_base.current + razoring_quad_mul.current * depth * depth <= alpha  
+        && tt_corrected_eval + razoring_base.current + razoring_quad_mul.current * depth * depth <= alpha  
         && search_info.excluded == 0){
         return q_search(board, alpha, beta, ply + 1);
     }
@@ -315,7 +328,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // STC: 5.83 +- 5.85 (dynamic)
     if (!pv_node 
         && !in_check 
-        && static_eval >= beta 
+        && tt_corrected_eval >= beta 
         && depth >= 2 
         && (!tt_hit || !(entry.type == NodeType::UPPERBOUND) || entry.score >= beta) && (board.hasNonPawnMaterial(Color::WHITE) || board.hasNonPawnMaterial(Color::BLACK)) 
         && search_info.excluded == 0){
@@ -406,7 +419,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             if (depth <= 4 
                 && !pv_node 
                 && !in_check 
-                && (static_eval + futility_eval_base.current) + futility_depth_mul.current * depth <= alpha) 
+                && (corrected_eval + futility_eval_base.current) + futility_depth_mul.current * depth <= alpha) 
                 continue;
         }
 
@@ -482,7 +495,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // position, determined by the difference between corrected eval
             // and raw evaluation
             // STC: 9.63 +- 6.01
-            reduction -= abs(raw_eval - static_eval) > late_move_reduction_corrplexity.current;
+            reduction -= abs(raw_eval - corrected_eval) > late_move_reduction_corrplexity.current;
 
             // Reduce more when in check
             // Ultra scaler somehow
@@ -493,7 +506,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // LMR Futility
             // Similar concept to futility pruning but we can be more aggressive
             // STC: 8.66 +- 5.65
-            reduction += static_eval + lmr_futility_base.current + lmr_futility_multiplier.current * depth <= alpha; 
+            reduction += corrected_eval + lmr_futility_base.current + lmr_futility_multiplier.current * depth <= alpha; 
 
             // Fail-High LMR
             // Reduce more if this branch is known to fail high
@@ -681,10 +694,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
         // Update correction histories
         if (!in_check && !board.isCapture(current_best_move) 
-            && !(bound == NodeType::LOWERBOUND && best_score <= static_eval) 
-            && !(bound == NodeType::UPPERBOUND && best_score >= static_eval)) {
+            && !(bound == NodeType::LOWERBOUND && best_score <= corrected_eval) 
+            && !(bound == NodeType::UPPERBOUND && best_score >= corrected_eval)) {
             
-            int32_t corrhist_bonus = clamp(best_score - static_eval, -1024, 1024);
+            int32_t corrhist_bonus = clamp(best_score - corrected_eval, -1024, 1024);
             update_correction_history(board, depth, corrhist_bonus);
         }
 
