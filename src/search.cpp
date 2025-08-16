@@ -326,7 +326,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         // Search has no parents :(
         SearchInfo info{};                                                                   
         info.parent_parent_move_piece = parent_move_piece;
-        info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
+        info.parent_parent_move_square = parent_move_square;                                
         int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
         board.unmakeNullMove();
 
@@ -511,6 +511,9 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Reduce less for killer moves
             // STC: 5.45 +- 4.10
             reduction -= (killers[0][ply] == current_move) || (killers[1][ply] == current_move);
+
+            // Reduce more for nonpv nodes
+            reduction += !pv_node;
         }
 
         // Capture late move reductions - since the move is a capture
