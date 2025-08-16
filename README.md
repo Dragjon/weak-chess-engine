@@ -59,6 +59,9 @@
       * In-check reductions
       * Futility reductions
       * Fail-high reductions
+      * TTPV reductions
+      * Cutnode reductions
+      * Killer reductions
     * Check extensions
   * Others
     * Static evaluation correction history
