@@ -462,6 +462,15 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             && best_score > -POSITIVE_WIN_SCORE)
             continue;
 
+
+        // Time for search
+        bool turn = board.sideToMove() == chess::Color::WHITE;
+        int32_t score = 0;
+        int32_t to = current_move.to().index();
+        int32_t from = current_move.from().index();
+        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+        int32_t captured_piece = static_cast<int32_t>(board.at(current_move.to()).internal());
+
         // Quiet late moves reduction - we have to trust that our
         // move ordering is good enough most of the time to order
         // best moves at the start
@@ -522,13 +531,11 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // STC: 17.07 +- 8.42
             reduction += (int32_t)(((double)capt_lmr_base.current / 100) + (((double)capt_lmr_multiplier.current * log(depth) * log(move_count)) / 100));
 
-        }
+            // Reduce less for moves that capture a higher value piece 
+            // than piece moved
+            reduction -= see_piece_values[move_piece % 6] < see_piece_values[captured_piece % 6];
 
-        int32_t score = 0;
-        bool turn = board.sideToMove() == chess::Color::WHITE;
-        int32_t to = current_move.to().index();
-        int32_t from = current_move.from().index();
-        int32_t move_piece = static_cast<int32_t>(board.at(current_move.from()).internal());
+        }
 
         // Basic make and undo functionality. Copy-make should be faster but that
         // debugging is for later
