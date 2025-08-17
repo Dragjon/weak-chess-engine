@@ -278,6 +278,19 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Improving heuristic (Whether we are at a better position than 2 plies before)
     // bool improving = static_eval > search_info.parent_parent_eval && search_info.parent_parent_eval != -100000;
 
+    // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
+    // that are high enough up in the search tree that we would expect to find a transposition
+    // to use later. (Comment from Ethereal)
+    // STC: 10.02 +/- 6.36
+    // STC: 9.64 +- 7.56 (cutnode)
+    // STC: 7.27 +- 5.64 (patch)
+    if ((pv_node || cut_node) 
+        && !in_check 
+        && depth >= 7 
+        && (!tt_hit || (entry.best_move != 0 && entry.depth <= depth - 5)) 
+        && search_info.excluded == 0)
+        depth--;
+
     // Reverse futility pruning / Static Null Move Pruning
     // If eval is well above beta, we assume that it will hold
     // above beta. We "predict" that a beta cutoff will happen
@@ -334,19 +347,6 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Do not return false mates in null move pruning (patch)
             return abs(null_score) >= POSITIVE_WIN_SCORE ? beta : null_score;
     }
-
-    // Internal iterative reduction. Artifically lower the depth on pv nodes / cutnodes
-    // that are high enough up in the search tree that we would expect to find a transposition
-    // to use later. (Comment from Ethereal)
-    // STC: 10.02 +/- 6.36
-    // STC: 9.64 +- 7.56 (cutnode)
-    // STC: 7.27 +- 5.64 (patch)
-    if ((pv_node || cut_node) 
-        && !in_check 
-        && depth >= 7 
-        && (!tt_hit || (entry.best_move != 0 && entry.depth <= depth - 5)) 
-        && search_info.excluded == 0)
-        depth--;
 
     // Main move loop
     // For loop is faster than foreach :)
