@@ -72,9 +72,8 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // Get the TT Entry for current position
     TTEntry entry{};
 
-    // Partial hash
-    size_t num_tt_entries = (tt_size.current * 1024 * 1024) / sizeof(TTEntry);
-    uint32_t zobrists_key = board.hash() / num_tt_entries; 
+    // Partial hash (keeps the left half of bits)
+    uint32_t zobrists_key = board.hash() >> 32ull; 
     bool tt_hit = tt.probe(zobrists_key, entry);
 
     // Transposition Table cutoffs
@@ -256,9 +255,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // Get the TT Entry for current position
     TTEntry entry{};
 
-    // Partial hash
-    size_t num_tt_entries = (tt_size.current * 1024 * 1024) / sizeof(TTEntry);
-    uint32_t zobrists_key = board.hash() / num_tt_entries; 
+    // Partial hash (keeps the left half of bits)
+    uint32_t zobrists_key = board.hash() >> 32ull; 
     bool tt_hit = tt.probe(zobrists_key, entry);
     bool tt_was_pv = tt_hit ? entry.tt_was_pv : pv_node;
 
@@ -709,8 +707,7 @@ void print_tt_pv(Board &board, int32_t depth){
         TTEntry entry{};
         
         // Partial hash
-        size_t num_tt_entries = (tt_size.current * 1024 * 1024) / sizeof(TTEntry);
-        uint32_t zobrists_key = board.hash() / num_tt_entries; 
+        uint32_t zobrists_key = board.hash() >> 32ull; 
 
         tt.probe(zobrists_key, entry);
         Movelist all_moves{};
