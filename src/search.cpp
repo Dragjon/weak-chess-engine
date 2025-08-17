@@ -447,7 +447,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
             // Negative extensions
             // Potential for multi-cut
             else if (entry.score >= beta)
-                extension = -3;
+                extension = -2 + pv_node;
 
             // Cutnode negative extensions
             else if (entry.score <= alpha && cut_node)
