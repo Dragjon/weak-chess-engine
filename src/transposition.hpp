@@ -17,7 +17,7 @@ enum class NodeType : uint8_t {
 
 // Single TT Entry
 struct TTEntry {
-    uint64_t key = 0; // Zobrist hash
+    uint32_t key = 0; // Partial zobrist hash
     int32_t score = 0; // Score 
     int32_t depth = -1; // Depth
     NodeType type = NodeType::NONE;
@@ -46,7 +46,7 @@ public:
         table.resize(size);
     }
 
-    void store(uint64_t key, int32_t score, int32_t depth, NodeType type, uint16_t best_move, bool tt_was_pv) {
+    void store(uint32_t key, int32_t score, int32_t depth, NodeType type, uint16_t best_move, bool tt_was_pv) {
         size_t index = key % size;
         TTEntry& entry = table[index];
 

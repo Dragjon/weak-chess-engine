@@ -71,7 +71,10 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
 
     // Get the TT Entry for current position
     TTEntry entry{};
-    uint64_t zobrists_key = board.hash(); 
+
+    // Partial hash
+    size_t num_tt_entries = (tt_size.current * 1024 * 1024) / sizeof(TTEntry);
+    uint32_t zobrists_key = board.hash() / num_tt_entries; 
     bool tt_hit = tt.probe(zobrists_key, entry);
 
     // Transposition Table cutoffs
@@ -252,7 +255,10 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
 
     // Get the TT Entry for current position
     TTEntry entry{};
-    uint64_t zobrists_key = board.hash(); 
+
+    // Partial hash
+    size_t num_tt_entries = (tt_size.current * 1024 * 1024) / sizeof(TTEntry);
+    uint32_t zobrists_key = board.hash() / num_tt_entries; 
     bool tt_hit = tt.probe(zobrists_key, entry);
     bool tt_was_pv = tt_hit ? entry.tt_was_pv : pv_node;
 
@@ -701,7 +707,11 @@ void print_tt_pv(Board &board, int32_t depth){
 
     if (depth > 0){
         TTEntry entry{};
-        uint64_t zobrists_key = board.hash(); 
+        
+        // Partial hash
+        size_t num_tt_entries = (tt_size.current * 1024 * 1024) / sizeof(TTEntry);
+        uint32_t zobrists_key = board.hash() / num_tt_entries; 
+
         tt.probe(zobrists_key, entry);
         Movelist all_moves{};
         movegen::legalmoves(all_moves, board);
