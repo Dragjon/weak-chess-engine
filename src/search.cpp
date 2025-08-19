@@ -286,7 +286,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
     // move history. We reduce the margin if the parent move is bad
     // an increase margin if parent move is good.
     // STC: 132.85 +/- 26.94
-    int32_t rfp_margin = reverse_futility_margin.current * depth + search_info.parent_hist_score / 400;
+    int32_t rfp_margin = reverse_futility_margin.current * depth + search_info.parent_hist_score / 500;
     if (!pv_node 
         && !tt_was_pv 
         && !in_check 
@@ -328,7 +328,8 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         int32_t reduction = null_move_base.current + depth / null_move_divisor.current;
                                                                                         
         // Search has no parents :(
-        SearchInfo info{};                                                                   
+        SearchInfo info{};                            
+        info.parent_hist_score = 0;                                       
         info.parent_parent_move_piece = parent_move_piece;
         info.parent_parent_move_square = parent_move_square;                                // Child of a cut node is a all-node and vice versa
         int32_t null_score = -alpha_beta(board, depth - reduction, -beta, -beta+1, ply + 1, !cut_node, info);
