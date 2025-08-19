@@ -346,7 +346,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         && depth >= 7 
         && (!tt_hit || (entry.best_move != 0 && entry.depth <= depth - 5)) 
         && search_info.excluded == 0)
-        depth--;
+        depth -= 1 + depth >= 11;
 
     // Main move loop
     // For loop is faster than foreach :)
