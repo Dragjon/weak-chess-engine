@@ -19,6 +19,7 @@ enum class NodeType : uint8_t {
 struct TTEntry {
     uint64_t key = 0; // Zobrist hash
     int32_t score = 0; // Score 
+    int32_t raw_eval; // Static evaluation
     int32_t depth = -1; // Depth
     NodeType type = NodeType::NONE;
     uint16_t best_move = 0; // Encoded move
@@ -46,12 +47,12 @@ public:
         table.resize(size);
     }
 
-    void store(uint64_t key, int32_t score, int32_t depth, NodeType type, uint16_t best_move, bool tt_was_pv) {
+    void store(uint64_t key, int32_t score, int32_t raw_eval, int32_t depth, NodeType type, uint16_t best_move, bool tt_was_pv) {
         size_t index = key % size;
         TTEntry& entry = table[index];
 
         if (entry.key == 0 || entry.depth <= depth) {
-            entry = TTEntry{ key, score, depth, type, best_move, tt_was_pv };
+            entry = TTEntry{ key, score, raw_eval, depth, type, best_move, tt_was_pv };
         }
     }
 

@@ -84,10 +84,10 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     // Eval pruning - If a static evaluation of the board will
     // exceed beta, then we can stop the search here. Also, if the static
     // eval exceeds alpha, we can set alpha to our new eval (comment from Ethereal)
-    int32_t eval = evaluate(board);
+    int32_t raw_eval = tt_hit ? entry.raw_eval : evaluate(board);
 
     // Correct static evaluation with our correction histories
-    eval = corrhist_adjust_eval(board, eval);
+    int32_t eval = corrhist_adjust_eval(board, raw_eval);
 
     int32_t best_score = eval;
     if (best_score >= beta) return best_score;
@@ -162,7 +162,7 @@ int32_t q_search(Board &board, int32_t alpha, int32_t beta, int32_t ply){
     uint16_t best_move_tt = bound == NodeType::UPPERBOUND ? entry.best_move : current_best_move.move();
 
     // Storing transpositions
-    tt.store(zobrists_key, best_score, 0, bound, best_move_tt, tt_hit ? entry.tt_was_pv : false);
+    tt.store(zobrists_key, best_score, raw_eval, 0, bound, best_move_tt, tt_hit ? entry.tt_was_pv : false);
 
     return best_score;
 }
@@ -266,7 +266,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         return entry.score;
 
     // Static evaluation for pruning metrics
-    int32_t raw_eval = evaluate(board);
+    int32_t raw_eval = tt_hit ? entry.raw_eval : evaluate(board);
 
     // Correct static evaluation with our correction histories
     // STC: 20.87 +- 9.48 (pawn)
@@ -689,7 +689,7 @@ int32_t alpha_beta(Board &board, int32_t depth, int32_t alpha, int32_t beta, int
         }
 
         // Storing transpositions
-        tt.store(zobrists_key, best_score, depth, bound, best_move_tt, tt_was_pv);
+        tt.store(zobrists_key, best_score, raw_eval, depth, bound, best_move_tt, tt_was_pv);
     }
 
     return best_score;
